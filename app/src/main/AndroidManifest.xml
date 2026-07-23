@@ -9,6 +9,13 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
+    <!-- Background conversion (SON-7): runs as a WorkManager foreground service with an ongoing
+         progress notification. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -18,6 +25,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Convert2video">
+
+        <!-- WorkManager's bundled SystemForegroundService declares no foregroundServiceType by
+             default; API 29+ requires one, and API 34+ requires it to match the type passed to
+             ForegroundInfo at runtime (dataSync pre-34, mediaProcessing from 34 on). -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="mediaProcessing|dataSync"
+            tools:node="merge" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -33,7 +33,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,9 +46,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -83,16 +79,22 @@ fun BackgroundLibraryScreen(
         contract = ActivityResultContracts.RequestPermission(),
     ) { granted -> if (granted) audioPickerLauncher.launch("audio/*") }
 
-    // AC-7: stopping the export when the app leaves the foreground.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP) {
-                viewModel.cancelConversion()
-            }
+    fun launchAudioPickerRespectingLegacyStorage() {
+        val needsLegacyStoragePermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+            PackageManager.PERMISSION_GRANTED
+        if (needsLegacyStoragePermission) {
+            storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else {
+            audioPickerLauncher.launch("audio/*")
         }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { _ ->
+        // AC-7: proceed regardless of whether the user granted it.
+        launchAudioPickerRespectingLegacyStorage()
     }
 
     BackgroundLibraryContent(
@@ -104,13 +106,13 @@ fun BackgroundLibraryScreen(
         onSelect = viewModel::selectBackground,
         onDelete = viewModel::deleteBackground,
         onConvertClick = {
-            val needsLegacyStoragePermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-                ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+            val needsNotificationPermission = Build.VERSION.SDK_INT >= 33 &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED
-            if (needsLegacyStoragePermission) {
-                storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            if (needsNotificationPermission) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
-                audioPickerLauncher.launch("audio/*")
+                launchAudioPickerRespectingLegacyStorage()
             }
         },
         onDismissResult = viewModel::dismissConversionResult,
@@ -262,8 +264,8 @@ private fun ConversionStateDialog(
             AlertDialog(
                 modifier = Modifier.testTag("conversion_cancelled_dialog"),
                 onDismissRequest = onDismissResult,
-                title = { Text("변환 중단됨") },
-                text = { Text("앱을 나가서 변환이 중단되었습니다. 다시 시도해주세요.") },
+                title = { Text("변환 취소됨") },
+                text = { Text("변환이 취소되었습니다. 다시 시도해주세요.") },
                 confirmButton = { TextButton(onClick = onDismissResult) { Text("확인") } },
             )
         }
