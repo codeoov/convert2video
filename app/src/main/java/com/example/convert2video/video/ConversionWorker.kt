@@ -53,10 +53,13 @@ class ConversionWorker(
                     result = when (val outcome = event.result) {
                         is ConversionResult.Success -> {
                             try {
+                                val existingNames =
+                                    C2vOutputNames.queryExistingDisplayNames(applicationContext)
+                                val displayName = C2vOutputNames.buildDisplayName(existingNames)
                                 val savedUri = MediaStoreSaver.saveVideoToMovies(
                                     context = applicationContext,
                                     sourceFile = outcome.outputFile,
-                                    displayName = "convert2video_${System.currentTimeMillis()}.mp4",
+                                    displayName = displayName,
                                 )
                                 outcome.outputFile.delete()
                                 postResultNotification(success = true, message = null)

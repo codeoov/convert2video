@@ -9,6 +9,13 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
+    <!-- Audio read: API 33+ uses READ_MEDIA_AUDIO; API 29-32 needs no extra permission for
+         MediaStore reads; API 26-28 uses READ_EXTERNAL_STORAGE. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
     <!-- Background conversion (SON-7): runs as a WorkManager foreground service with an ongoing
          progress notification. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
