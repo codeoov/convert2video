@@ -1,0 +1,99 @@
+---
+description: "happy_v12 Phase 9 — lounge (라운지) Munto-style feed UI and checklist. Use when editing lounge tab, feed cards, DummyFeeds, FeedDto, Lounge/Feed ViewModels, or MemberHomeScreen lounge sections (tabs, filters, app bar). **폴더**: `member_3_lounge` (structure-kotlin Phase D)."
+alwaysApply: false
+globs:
+  - "**/member_3_lounge/**/*.kt"
+  - "**/controllers/member/lounge/**/*.kt"
+  - "**/data/dto/feed/**/*.kt"
+  - "**/FeedRepository.kt"
+  - "**/FeedApi.kt"
+  - "**/FeedCard.kt"
+  - "**/member_main/MemberHomeScreen.kt"
+---
+
+# Phase 9: 라운지 문토 스타일 — happy_v12
+
+**목표**: 라운지 페이지를 문토 스타일로 구성 — 더미 데이터·에러 대체, 상단 앱바·피드/장소 탭, 필터 탭, FeedCard 문토 레이아웃, 문자열·용어 정리  
+**상태**: ✅ 완료
+
+---
+
+## 1. 더미 데이터·에러 시 대체 (9-1)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 더미 데이터 소스 | DummyFeeds.list() 단일 소스. data/dto/feed/DummyFeeds.kt | ✅ |
+| LoungeViewModel | API 실패 또는 feeds.isEmpty() 시 feeds = DummyFeeds.list(), error = null | ✅ |
+| terminology | 피드 더미 데이터 등록 | ✅ |
+
+**참고**: `LoungeViewModel.kt`, `Member3LoungePage.kt`, `FeedDto.kt`, do-not-repeat §2, §4.2
+
+---
+
+## 2. 라운지 상단 구조 (9-2)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 앱바 제목 | `MemberHomeScreen` **하단** selectedTab==**2**(라운지)일 때 제목 "라운지" (`member_home_tab_lounge`) | ✅ |
+| 앱바 액션 | 연필(작성) + 책갈피 + 검색. 책갈피/검색 클릭 시 common_tab_placeholder Snackbar | ✅ |
+| 1단계 탭 | 피드 \| 장소. 피드 → Member3LoungePage, 장소 → PlaceholderTabContentOrganism | ✅ |
+| 문자열 | lounge_tab_feed, lounge_tab_place, a11y_bookmark | ✅ |
+
+**참고**: `MemberHomeScreen.kt`, do-not-repeat §6.2b, §6, terminology: 라운지 1단계 탭
+
+---
+
+## 3. 라운지 필터 탭 (9-3)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 필터 탭 목록 | 최신/발견/인기/모임 후기/취향 에디터. 가로 스크롤 | ✅ |
+| 선택 스타일 | 선택: primary 배경 + onPrimary. 미선택: surfaceContainerHighest | ✅ |
+| 문자열 | lounge_filter_latest, lounge_filter_discover, lounge_filter_popular, lounge_filter_gathering_review, lounge_filter_editor_pick | ✅ |
+
+**참고**: `MemberHomeScreen.kt`, do-not-repeat §6, §3.1, terminology: 라운지 필터 탭
+
+---
+
+## 4. FeedCard 문토 스타일 (9-4)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 카드 모서리 | listCardBorderRadius 사용 | ✅ |
+| 헤더 | 아바타 + 이름 + 시간 + 팔로우 버튼 + ⋯(MoreVert) → DropdownMenu 신고 | ✅ |
+| 이미지 | 1장 단일, 2장 이상 HorizontalPager + 점 인디케이터 | ✅ |
+| 본문 아래 | gatheringTypeLabel 태그, locationDisplay(핀 아이콘 + 텍스트) | ✅ |
+| FeedDto 확장 | gatheringTypeLabel, locationDisplay (optional) | ✅ |
+| 문자열 | feed_follow, a11y_more_options | ✅ |
+
+**참고**: `FeedCard.kt` (organism), `FeedDto.kt`, `DummyFeeds.kt`, terminology: 피드 모임 유형 라벨, 피드 장소 표시
+
+---
+
+## 5. 문자열·리소스·용어 (9-5)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 라운지·피드 UI 문자열 | values/values-ko. 하드코딩 없음 | ✅ |
+| contentDescription | Icon·IconButton에서 stringResource 사용 (Composable 스코프) | ✅ |
+| terminology-glossary | 피드 더미 데이터, 라운지 1단계 탭, 라운지 필터 탭, 피드 모임 유형 라벨, 피드 장소 표시 | ✅ |
+
+**참고**: do-not-repeat §6, §6.2b, terminology-glossary.mdc
+
+---
+
+## 6. Phase 9 완료 체크리스트
+
+- [x] 9-1: DummyFeeds 단일 소스, ViewModel 에러/빈 목록 시 더미 노출
+- [x] 9-2: 라운지 앱바(제목+연필+책갈피+검색), 피드/장소 1단계 탭
+- [x] 9-3: 필터 탭(최신/발견/인기/모임 후기/취향 에디터), 선택 스타일
+- [x] 9-4: FeedCard 문토 스타일(팔로우·⋯·이미지 인디케이터·태그·장소), listCardBorderRadius
+- [x] 9-5: strings.xml·a11y·terminology-glossary 반영
+- [x] do-not-repeat §3.1·§6·§6.2b 준수
+- [x] Phase D4: 라운지 앱바 제목은 멤버 홈 **하단** `selectedTab == 2` 기준(§2 표와 동일)
+
+---
+
+## 7. 한 줄 요약
+
+> Phase 9: 라운지 문토 스타일 — 더미 데이터(9-1), 상단 앱바·피드/장소 탭(9-2), 필터 탭(9-3), FeedCard 문토 레이아웃(9-4), 문자열·용어(9-5).

@@ -1,0 +1,10 @@
+=== Claude Code Session Report ===
+Updated : 2026-08-04 05:24:55
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.

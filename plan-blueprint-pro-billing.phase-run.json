@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "planPath": "C:\\Users\\songw\\AndroidStudioProjects\\convert2video\\plan-blueprint-pro-billing.md",
+  "planSha256": "1BF43AB747F30FAFBCE46D6B9011A94A3CE24D82AFDCDF8F0C75454F78907E56",
+  "checkout": "C:\\Users\\songw\\AndroidStudioProjects\\convert2video",
+  "phases": [
+    {
+      "id": "P11",
+      "mode": "harness",
+      "dependsOn": ["P10"],
+      "targets": [
+        "app/src/main/res/values/strings.xml",
+        "app/src/main/res/values-ko/strings.xml"
+      ],
+      "requiredChecks": [
+        "rg -n 'options_pro_|pro_|purchase|restore' app\\src\\main\\res\\values\\strings.xml app\\src\\main\\res\\values-ko\\strings.xml",
+        ".\\scripts\\check-terminology-forbidden.ps1"
+      ],
+      "manualGates": [
+        "English and Korean button/status/error strings are available for the P10 states",
+        "Pending and cancelled use distinct messages"
+      ]
+    }
+  ],
+  "selected": ["P11"]
+}

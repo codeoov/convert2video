@@ -1,0 +1,110 @@
+---
+description: "Harness 서브에이전트 Task 호출 템플릿 및 자율 종료 조건. /sprint-run 루프에서 각 역할(planner/plan_evaluator/generator/evaluator) 프롬프트 양식."
+globs: "*"
+alwaysApply: true
+---
+
+# Harness 서브에이전트 (convert2video)
+
+에이전트 정의: `.cursor/agents/planner.md`, `generator.md`, `evaluator.md`, `.claude/agents/plan_evaluator.md`
+
+게이트·루프: `sprint-harness-gate.mdc`, `harness-loop.mdc`
+
+규칙 자동 주입: `PreToolUse(Task/Agent)` → `harness-inject-rules.ps1` → `.cursor/harness/cache/latest-<role>.md`
+
+---
+
+## 자율 종료 조건 (Goal)
+
+`/sprint-run` 실행 시 아래 조건이 충족될 때까지 사용자 개입 없이 Task 순서를 반복한다:
+
+> **evaluator Round 3+ `PASS`** + `compileDebugKotlin` 무에러 + `run-stop-checks.ps1` exit 0
+
+이 조건 충족 전에 「스프린트 완료」「구현 끝」 등 최종 완료 답변 금지.
+
+---
+
+## Task 호출 템플릿 (고정)
+
+### planner
+
+```
+Task(
+  subagent_type="planner",
+  description="planner: 스프린트 범위 확정",
+  prompt="""
+You are the planner Harness subagent. Follow .cursor/agents/planner.md exactly.
+
+Rule context: auto-injected at PreToolUse — 없으면 Read .cursor/harness/cache/latest-planner.md 를 첫 액션으로.
+
+[사용자 요청 원문 또는 @기획서 경로 + 이번 스프린트 목표]
+"""
+)
+```
+
+### plan_evaluator
+
+```
+Task(
+  subagent_type="plan_evaluator",
+  description="plan_evaluator: Type 검증·Approved",
+  prompt="""
+You are the plan_evaluator Harness subagent. Follow .claude/agents/plan_evaluator.md exactly.
+
+Rule context: auto-injected — 없으면 Read .cursor/harness/cache/latest-plan_evaluator.md 첫 액션.
+
+[planner 출력 전문]
+"""
+)
+```
+
+### generator
+
+```
+Task(
+  subagent_type="generator",
+  description="generator: Round N 구현",
+  prompt="""
+You are the generator Harness subagent. Follow .cursor/agents/generator.md exactly.
+
+Rule context: auto-injected — 없으면 Read .cursor/harness/cache/latest-generator.md 첫 액션.
+
+Contract:
+[planner/plan_evaluator 출력 — 수정 파일·완료 기준·검증 4종(compile/checks/패키지·용어·단일소스/런타임)]
+"""
+)
+```
+
+### evaluator
+
+```
+Task(
+  subagent_type="evaluator",
+  description="evaluator: Round N 채점",
+  prompt="""
+You are the evaluator Harness subagent. Follow .cursor/agents/evaluator.md exactly.
+
+Rule context: auto-injected — 없으면 Read .cursor/harness/cache/latest-evaluator.md 첫 액션.
+
+Round N. PASS는 Round 3+ 에서만. Round 1-2는 FAIL 전제. Grill-me 5건 이상 필수.
+
+Contract: [수정 파일·완료 기준]
+
+Terminal에서 실행 (PowerShell, && 금지):
+.\gradlew.bat :app:compileDebugKotlin --no-daemon
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".cursor\hooks\run-stop-checks.ps1"
+"""
+)
+```
+
+---
+
+## 호출 순서
+
+| 단계 | Task | 조건 |
+|------|------|------|
+| 0 | Goal 등록 | `/sprint-run` 실행 즉시 |
+| 1 | `planner` | 스펙·범위 확정 |
+| 2 | `plan_evaluator` | Approved 전까지 반복 |
+| 3 | `generator` + `evaluator` | Contract 합의 |
+| 4–N | `generator` Round N → `evaluator` Round N | evaluator PASS + Round 3+ 전까지 반복 (max 10회) |

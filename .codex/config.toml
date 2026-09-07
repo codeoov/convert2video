@@ -1,0 +1,7 @@
+# Streamable HTTP. Codex는 `url`이면 HTTP, `command`면 stdio. 별도 transport 필드 없음.
+# finn-build / finn-review / finn-spec 실호출 전: `codex mcp login linear`
+[mcp_servers.linear]
+url = "https://mcp.linear.app/mcp"
+
+[features]
+codex_hooks = true

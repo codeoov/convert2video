@@ -1,0 +1,93 @@
+---
+description: "happy_v12 Phase 4 — UX polish & accessibility: admin approval tabs (catalog/host applications), PhoneSignup country code, a11y (contentDescription, TalkBack, 48dp touch), stringResource vs hardcoded strings, Atomic Design molecules/organisms (AppLoadingIndicator, ErrorRetryBlock, GatheringCard, BannerSlider, SkeletonCardOrganism). Use when editing admin approval flows, signup UX, Compose UI polish, or Phase 4 checklist items."
+alwaysApply: false
+globs:
+  - "**/AdminApprovalGroup.kt"
+  - "**/AdminCatalogTab.kt"
+  - "**/AdminHostApplicationsTab.kt"
+  - "**/AdminRepository.kt"
+  - "**/AdminApi.kt"
+  - "**/PhoneSignupScreen.kt"
+  - "**/AppLoadingIndicatorMolecule.kt"
+  - "**/ErrorRetryBlock.kt"
+  - "**/GatheringCardOrganism.kt"
+  - "**/BannerSliderOrganism.kt"
+  - "**/SkeletonCardOrganism.kt"
+---
+
+# Phase 4: UX·고도화 — happy_v12
+
+**목표**: UI/UX 완성도 향상, 접근성, 관리자 승인 탭 완성  
+**상태**: 🔲 진행 중
+
+---
+
+## 1. 관리자 승인 (Admin Phase 4)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| AdminApprovalGroup | 카탈로그·호스트 탭 | ✅ 완료 |
+| AdminCatalogTab | 모임 카탈로그 승인/반려 | ✅ |
+| AdminHostApplicationsTab | 호스트 신청 승인/반려 | ✅ |
+| listGatheringsAdmin, approveGathering, rejectGathering | API | ✅ |
+| listHostApplications, approveHost, rejectHost | API | ✅ |
+
+**참고**: `AdminRepository.kt`, `AdminApi.kt`, `AdminApprovalGroup.kt`
+
+---
+
+## 2. 전화번호 회원가입 (PhoneSignup Phase 4)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 국가 코드 선택 | CountryCodeSelector 통합 | ✅ |
+
+**참고**: `PhoneSignupScreen.kt` — "Phase 4: 국가 코드 선택 통합"
+
+---
+
+## 3. 접근성 (a11y)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| contentDescription | 아이콘·이미지 | 🔲 검증 |
+| TalkBack | 스크린 리더 지원 | 🔲 |
+| 터치 영역 | 최소 48dp | 🔲 검증 |
+
+---
+
+## 4. UI/UX polish
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 로딩 애니메이션 | AppLoadingIndicator | ✅ |
+| 페이지 전환 | AnimatedContent 등 | 🔲 |
+| 스켈레톤 | SkeletonCardOrganism (common) | ✅ |
+| 하드코딩 문자열 | stringResource 전환 | 🔲 검증 |
+
+---
+
+## 5. Atomic Design (Phase 4-2, 4-3)
+
+| 레이어 | 내용 | 상태 |
+|--------|------|------|
+| Phase 4-2 | molecules (AppLoadingIndicator, ErrorRetryBlock) | ✅ |
+| Phase 4-3 | organisms (GatheringCard, BannerSlider 등) | ✅ |
+
+**참고**: 로딩·카드·배너·하단 네비는 `2_molecules`·`3_organisms`에 직접 두고 Phase D 이후 `ui/components` 얇은 래퍼는 제거됨.
+
+---
+
+## 6. Phase 4 완료 체크리스트
+
+- [x] 관리자 승인 탭 (카탈로그·호스트)
+- [x] PhoneSignup 국가 코드 선택 통합
+- [ ] 접근성 검증 (contentDescription, TalkBack)
+- [x] UI/UX polish (스켈레톤 SkeletonCardOrganism)
+- [x] 탭 플레이스홀더 하드코딩 → common_tab_placeholder
+
+---
+
+## 7. 한 줄 요약
+
+> Phase 4: 관리자 승인 완료, 전화번호 국가 코드·접근성·UI polish 등 UX 고도화.

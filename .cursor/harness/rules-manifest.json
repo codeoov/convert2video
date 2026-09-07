@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "rules_dir": ".cursor/rules",
+  "cache_dir": ".cursor/harness/cache",
+  "token_budget_chars": 48000,
+  "roles": {
+    "planner": {
+      "label": "Harness Planner",
+      "always": [
+        "convert2video-core.mdc",
+        "harness-loop.mdc",
+        "structure-kotlin.mdc",
+        "project-scope-kotlin.mdc"
+      ],
+      "type_extra": {
+        "B": ["do-not-repeat-kotlin.mdc"],
+        "C": ["do-not-repeat-kotlin.mdc", "terminology-glossary.mdc"]
+      }
+    },
+    "plan_evaluator": {
+      "label": "Harness Plan Evaluator",
+      "always": [
+        "convert2video-core.mdc",
+        "structure-kotlin.mdc",
+        "do-not-repeat-kotlin.mdc"
+      ]
+    },
+    "generator": {
+      "label": "Harness Generator",
+      "always": [
+        "convert2video-core.mdc",
+        "structure-kotlin.mdc",
+        "do-not-repeat-kotlin.mdc",
+        "terminology-glossary.mdc"
+      ],
+      "contract_path_extra": {
+        "ui/": ["project-scope-kotlin.mdc"],
+        "video/": ["project-scope-kotlin.mdc"],
+        "ConversionWorker": ["do-not-repeat-kotlin.mdc"]
+      }
+    },
+    "evaluator": {
+      "label": "Harness Evaluator",
+      "always": [
+        "convert2video-core.mdc",
+        "structure-kotlin.mdc",
+        "do-not-repeat-kotlin.mdc",
+        "terminology-glossary.mdc"
+      ],
+      "round_extra_from": 3,
+      "round_extra": ["project-scope-kotlin.mdc"]
+    },
+    "main": {
+      "label": "Harness Main (arm 시 1회)",
+      "always": [
+        "sprint-harness-gate.mdc",
+        "harness-subagents.mdc",
+        "harness-loop.mdc"
+      ]
+    }
+  }
+}

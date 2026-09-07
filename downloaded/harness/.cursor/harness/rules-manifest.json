@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "rules_dir": ".cursor/rules",
+  "cache_dir": ".cursor/harness/cache",
+  "token_budget_chars": 48000,
+  "roles": {
+    "planner": {
+      "label": "Harness Planner",
+      "always": [
+        "plan-sprint-format.mdc",
+        "nextjs-rule.mdc",
+        "nextjs-ai-prevention.mdc",
+        "harness-loop.mdc"
+      ],
+      "type_extra": {
+        "C": ["nextjs-security.mdc"],
+        "M": ["nextjs-security.mdc", "nextjs-structure.mdc"]
+      }
+    },
+    "plan_evaluator": {
+      "label": "Harness Plan Evaluator",
+      "always": [
+        "plan-sprint-format.mdc",
+        "nextjs-rule.mdc",
+        "nextjs-ai-prevention.mdc",
+        "nextjs-security.mdc"
+      ],
+      "type_extra": {
+        "M": ["nextjs-structure.mdc"]
+      }
+    },
+    "generator": {
+      "label": "Harness Generator",
+      "always": [
+        "nextjs-rule.mdc",
+        "nextjs-security.mdc",
+        "nextjs-ai-prevention.mdc",
+        "nextjs-performance.mdc",
+        "nextjs-dev-cache.mdc"
+      ],
+      "contract_path_extra": {
+        "layout.tsx": ["nextjs-performance.mdc"],
+        "next.config.ts": ["nextjs-performance.mdc"]
+      }
+    },
+    "evaluator": {
+      "label": "Harness Evaluator",
+      "always": [
+        "nextjs-rule.mdc",
+        "nextjs-security.mdc",
+        "nextjs-ai-prevention.mdc",
+        "server-logs.mdc",
+        "nextjs-dev-cache.mdc"
+      ],
+      "type_extra": {
+        "C": ["db-migration-verification.mdc"],
+        "M": ["nextjs-structure.mdc", "db-migration-verification.mdc"]
+      },
+      "round_extra_from": 3,
+      "round_extra": ["nextjs-performance.mdc"]
+    },
+    "main": {
+      "label": "Harness Main (arm 시 1회)",
+      "always": [
+        "sprint-harness-gate.mdc",
+        "harness-subagents.mdc",
+        "harness-loop.mdc"
+      ]
+    }
+  }
+}

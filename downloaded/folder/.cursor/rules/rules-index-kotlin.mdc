@@ -1,0 +1,58 @@
+---
+alwaysApply: true
+---
+
+# Cursor Rules 목차 — happy_v12
+
+**역할**: 어떤 규칙 파일을 언제 열지 빠르게 찾기.
+
+**상시 자동 적용**: `happy-core-kotlin.mdc` + **`sprint-harness-gate.mdc`** + **`harness-loop.mdc`** + 이 목차 / `.kt·.kts` 파일 열 때: `do-not-repeat-kotlin.mdc` / UI `ui/views/**`: `atomic-design-kotlin.mdc`
+
+## Harness (스프린트 — 최우선)
+
+| 파일 | 내용 |
+|------|------|
+| `sprint-harness-gate.mdc` | **실행 게이트** — 트리거·메인 직접 코딩 금지·첫 응답 표·Task 순서 · 스모크: `scripts/verify-harness-setup.ps1` |
+| `harness-loop.mdc` | planner → generator ↔ evaluator 루프·오케스트레이션 |
+| `harness-subagents.mdc` | **Task 호출 템플릿·자율 종료 조건** (Round 3+ PASS) |
+| `.cursor/commands/sprint-run.md` | 슬래시 **`/sprint-run`** 절차 |
+| `.cursor/agents/planner.md` · `generator.md` · `evaluator.md` | 서브에이전트 역할 |
+| `.cursor/harness/rules-manifest.json` | 역할별 `.mdc` 번들 매핑 (inject 자동 주입) |
+
+**채팅 예시**: `스프린트 돌려` · `@plan.md 실행해` · `/sprint-run` → 위 파일 준수, **evaluator PASS 전 완료 금지**.
+
+## 항상 먼저 볼 것
+
+| 파일 | 내용 |
+|------|------|
+| `happy-core-kotlin.mdc` | 로깅·용어·네이밍·Deprecated·테스트·재발방지 **핵심만** (짧음) |
+
+## 주제별로 열 파일 (지시 예시 → 파일)
+
+| 주제 | 파일 | 지시 예시 (채팅에 넣기) |
+|------|------|-------------------------|
+| 폴더·패키지·트리 | `structure-kotlin.mdc` | "구조 규칙대로", "어느 폴더에 넣지" |
+| Atomic Design·atoms·계층 import·template 역할 | `atomic-design-kotlin.mdc` | "아토믹 규칙", "atom 어디에 두지", "views 계층", "template·상태 소유(§5.5·§5.5a)", "begin 유기체 §5.2a" |
+| 화면 플로우·도메인 개요 | `project-scope-kotlin.mdc` | "로그인 플로우", "호스트 홈", "딥링크" |
+| 전체 용어 표·API 표 | `terminology-glossary.mdc` | "용어 사전", "glossary", "신규 용어 등록" |
+| 상세 재발방지·l10n·단일 소스 | `do-not-repeat-kotlin.mdc` | "do-not-repeat", "Route", "Snackbar", "검색 배너" |
+| Phase N 작업 | `phase1-kotlin.mdc` ~ `phase9-kotlin.mdc` | "Phase 7", "phase8 규칙" |
+| 스프린트·Harness | `sprint-harness-gate.mdc` + `harness-loop.mdc` | "스프린트 돌려", "루프 시작", `/sprint-run` |
+
+## 온디맨드(주제 룰) — Skills에 가깝게 쓰기
+
+- 두꺼운 룰은 필요할 때만 붙인다.
+- **파일 멘션**: 채팅에 `@.cursor/rules/terminology-glossary.mdc` 또는 `@.cursor/rules/do-not-repeat-kotlin.mdc`처럼 넣으면 해당 규칙을 우선 읽기 쉽다.
+- **한 줄 예시** (큰 작업 시작할 때 복사·수정):
+  - `용어·Verify/Confirm·API 표는 terminology-glossary 기준으로`
+  - `Route·Snackbar·l10n·단일 소스는 do-not-repeat 기준으로`
+  - `이번 작업은 phase8만 추가로 적용`
+  - `ui/views 아토믹·atoms는 atomic-design-kotlin 기준으로`
+  - `begin 유기체(인증·온보딩) 원자·분자 우선은 atomic-design §5.2a`
+
+## Phase 파일 한 줄
+
+- `phase1` 골격·인증 / `phase2` 멤버·호스트 / `phase3` 보강 / `phase4` UX·접근성 / `phase5` 관리자 확장 / `phase6` 안정화 / `phase7` UX(스케일·달력 등) / `phase8` 홈 카드·가로 스크롤 / `phase9` 라운지·피드 등
+- **호스트 IA 구조**: `phase2-kotlin.mdc` §7a. 멤버 폴더 순서·Phase D는 `structure-kotlin.mdc` §1.5 단일 소스.
+
+**Claude Code 등 (Cursor 밖)**: 작업 전 `happy-core-kotlin.mdc` + 위 표에서 해당 주제 파일을 연다.

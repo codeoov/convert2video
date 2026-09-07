@@ -1,57 +1,10 @@
 ---
-description: "convert2video ?©ì–´Â·?ìˆ˜ ?¬ì „"
+description: "convert2video ìš©ì–´Â·ìƒìˆ˜ ì‚¬ì „"
 globs: "**/*.{kt,kts}"
 alwaysApply: false
 ---
 
-# ?©ì–´ ?¬ì „ ??convert2video
+> ì „ì²´ ë‚´ìš©ì€ ë‹¨ì¼ ì†ŒìŠ¤ [`CLAUDE.md`](../../CLAUDE.md) Â§ Terminology Glossary ì°¸ê³ .
+> ì´ íŒŒì¼ì€ Cursor ê·œì¹™ ì—”ì§„ê³¼ Harness ë²ˆë“¤ëŸ¬ê°€ ìë™ ë¡œë“œí•˜ê¸° ìœ„í•œ í¬ì¸í„°ì…ë‹ˆë‹¤.
 
-## 1. ?„ë©”???©ì–´
-
-| ?©ì–´ | ?˜ë? | ì½”ë“œ ??|
-|------|------|---------|
-| background | ë°°ê²½ ?´ë?ì§€(?¼ì´ë¸ŒëŸ¬ë¦???ª©) | `BackgroundImage`, `BackgroundRepository` |
-| conversion | ?¤ë””???´ë?ì§€ë¥??ìƒ?¼ë¡œ ë§Œë“œ???‘ì—… | `ConversionWorker`, `ConversionUiState` |
-| video | ê²°ê³¼ MP4 | `VideoConverter`, MediaStore ?€??|
-| audio | ?…ë ¥ ?¤ë””???¸ë™ | `audioUri`, duration Us |
-| convertedVideo | ë³€???„ë£Œ??ê°¤ëŸ¬ë¦??ìƒ ??ª© | `ConvertedVideo`, `ConvertedVideoRepository` |
-
-## 2. ì£¼ìš” ?ìˆ˜
-
-| ?´ë¦„ | ?„ì¹˜ | ê°???•  |
-|------|------|---------|
-| `CONVERSION_WORK_NAME` | `HomeViewModel` | `audio_to_video_conversion` |
-| `KEY_BACKGROUND_PATH` | `ConversionWorker` | Worker ?…ë ¥ |
-| `KEY_AUDIO_URI` | `ConversionWorker` | Worker ?…ë ¥ |
-| `VIDEO_FRAME_RATE` | `VideoConverter` | ?•ì  ?´ë?ì§€??FPS |
-| `VIDEO_SHORT_SIDE_PX` | `VideoConverter` | ì§§ì? ë³€ ?í•œ(px) |
-| `C2V_FOLDER` | `C2vOutputNames` | `Movies/C2V` ??? ê·œ ?€???´ë” |
-| `LEGACY_FOLDER` | `C2vOutputNames` | `Movies/convert2video` ??êµ??´ë”(?½ê¸° ?„ìš© OR) |
-
-## 2-1. ?Œì¼ëª?ê·œì¹™
-
-| ?¨í„´ | ?ˆì‹œ |
-|------|------|
-| `(C2V)yyyy-MM-dd_HH-mm.mp4` | `(C2V)2026-07-24_08-30.mp4` |
-| ê°™ì? ë¶?ì¶©ëŒ ??`_n` ?‘ë???| `(C2V)2026-07-24_08-30_2.mp4` |
-
-## 3. UiState
-
-| ?íƒœ | ?˜ë? |
-|------|------|
-| `ConversionUiState.Idle` | ?€ê¸?|
-| `Progress` | ì§„í–‰ë¥?|
-| `Success` | ?„ë£Œ(?€?¥ë¨) |
-| `Failed` / `Cancelled` | ?¤íŒ¨Â·ì·¨ì†Œ (ì½”ë“œ ê¸°ì? ?„í–‰ sealed ? ì?) |
-
-## 4. ê¸ˆì? ?´ì‹ ?©ì–´
-
-ì½”ë“œÂ·ì£¼ì„Â·?ë³„?ì— ?´ì „ ???„ë©”???©ì–´ë¥?**??ê¸°ëŠ¥ëª…ìœ¼ë¡?* ?°ì? ?ŠìŒ:
-
-`gathering`, `booking`, `meetup`, `reservation`, `my_info`, `my_page`, `host_settlement`, `lounge`
-
-(?ˆë“œë¡œì´??`androidx.activity` ???„ë ˆ?„ì›Œ???ë³„?ëŠ” ?ˆìš©.)
-
-## 5. ?±ë¡ ê·œì¹™
-
-??EntityÂ·WorkerÂ·ê³µê°œ ?ìˆ˜Â·?¬ìš©???¸ì¶œ ?„ë©”???¨ì–´ë¥?ì¶”ê??˜ë©´ ???Œì¼????ì¤?ì¶”ê?.
+@../../CLAUDE.md

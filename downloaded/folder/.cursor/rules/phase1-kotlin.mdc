@@ -1,0 +1,91 @@
+---
+description: "happy_v12 Phase 1 — app skeleton & auth: Route.kt single source, HappyApp NavHost (startDestination WELCOME), DeepLinkViewModel / DeepLinkBinder / NavRequest, AuthNavGraph & AuthDestinations, welcome & Google/email auth & password reset (5_pages/begin/{welcome,google,email,common} + begin_*_N_*; 레거시 5_pages/begin_1_welcome·최상위 begin_common_* 금지, structure §1.5), 4_templates/begin/, signup (controllers/begin/signup), AuthRepository & AuthApi, RouteArgsCodec. Restore request/confirm is part of this phase checklist. Use when editing login, signup, routes, deep links, session entry, or Phase 1 checklist."
+alwaysApply: false
+globs:
+  - "**/config/Route.kt"
+  - "**/HappyApp.kt"
+  - "**/DeepLinkViewModel.kt"
+  - "**/DeepLinkBinder.kt"
+  - "**/navigation/AuthNavGraph.kt"
+  - "**/navigation/AuthDestinations.kt"
+  - "**/RouteArgsCodec.kt"
+  - "**/ui/views/5_pages/begin/**/*.kt"
+  - "**/ui/views/3_organisms/begin/**/*.kt"
+  - "**/ui/views/4_templates/begin/**/*.kt"
+  - "**/controllers/begin/**/*.kt"
+  - "**/data/repository/AuthRepository.kt"
+  - "**/data/remote/AuthApi.kt"
+  - "**/RestoreRequestScreen.kt"
+  - "**/RestoreConfirmScreen.kt"
+  - "**/RestoreRequestViewModel.kt"
+  - "**/RestoreConfirmViewModel.kt"
+  - "**/RouteArgsCodecTest.kt"
+---
+
+# Phase 1: 골격·핵심 — happy_v12
+
+**목표**: 앱 실행, 인증·회원가입, 기본 네비게이션 골격 완성  
+**상태**: ✅ 완료
+
+---
+
+## 1. 라우트·네비게이션
+
+- **단일 소스**: `config/Route.kt` — 모든 화면 경로 상수
+- **NavHost**: `HappyApp.kt` — `startDestination = Route.WELCOME`
+- **딥링크**: `DeepLinkViewModel` → `NavRequest` emit → HappyApp에서 navigate
+
+---
+
+## 2. 웰컴·인증 (5_pages/begin)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| WelcomeScreen | WELCOME | 구글/이메일/이메일 로그인 선택, 세션 체크 |
+| GoogleAuthLoadingScreen | GOOGLE_AUTH_LOADING | 구글 로그인 처리, 신규/기존 분기 |
+| GoogleAuthAdditionalInfoScreen | GOOGLE_AUTH_ADDITIONAL_INFO | 구글 신규 사용자 전화번호 입력 |
+| GoogleAuthPhoneVerifyScreen | GOOGLE_AUTH_PHONE_VERIFY/{phoneNumber} | OTP 인증 |
+| EmailEntryScreen | EMAIL_ENTRY | 이메일 입력 → check_email_for_signup 분기 |
+| EmailLoginScreen | EMAIL_LOGIN | 이메일+비밀번호 한 화면 로그인 |
+| EmailPasswordEntryScreen | EMAIL_PASSWORD_ENTRY/{email} | 기존 사용자 비밀번호 입력 |
+| AccountBlockedScreen | ACCOUNT_BLOCKED | 정지/휴면 계정 안내 |
+| RestoreRequestScreen | RESTORE_REQUEST | 탈퇴 복구 요청 (이메일 입력) |
+| RestoreConfirmScreen | RESTORE_CONFIRM?token= | 탈퇴 복구 확인 (딥링크) |
+| PasswordResetRequestScreen | PASSWORD_RESET_REQUEST | 비밀번호 재설정 요청 |
+| PasswordResetVerifyScreen | PASSWORD_RESET_VERIFY?token= | 토큰 검증 |
+| PasswordResetCompleteScreen | PASSWORD_RESET_COMPLETE?token= | 새 비밀번호 설정 |
+
+---
+
+## 3. 회원가입 (signup)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| SignupPasswordScreen | SIGNUP_PASSWORD/{email} | 비밀번호·이름·마케팅 동의 |
+| EmailVerificationScreen | EMAIL_VERIFICATION/{email} | 이메일 인증 대기 |
+| PhoneSignupScreen | PHONE_SIGNUP | 전화번호 입력 (구글 로그인 후) |
+| PhoneVerifySignupScreen | PHONE_VERIFY_SIGNUP | OTP 인증 |
+| SignupReferralScreen | SIGNUP_REFERRAL | 추천인 코드 (선택) |
+| SignupGenderScreen | SIGNUP_GENDER | 성별 |
+| SignupBirthdateScreen | SIGNUP_BIRTHDATE | 생년월일 |
+| SignupNicknameScreen | SIGNUP_NICKNAME | 닉네임 |
+
+---
+
+## 4. Phase 1 완료 체크리스트
+
+- [x] Route.kt 단일 소스, NavHost와 일치
+- [x] WelcomeScreen, 세션 체크, 자동 로그인
+- [x] 구글 로그인 (Loading, AdditionalInfo, PhoneVerify)
+- [x] 이메일 로그인 (Entry, Login, PasswordEntry)
+- [x] 회원가입 (Password, Verification, 기본정보 4단계)
+- [x] 전화번호 회원가입 (PhoneSignup, PhoneVerifySignup)
+- [x] 비밀번호 재설정 (Request, Verify, Complete)
+- [x] 정지/휴면 (AccountBlockedScreen)
+- [x] 탈퇴 복구 (RestoreRequest, RestoreConfirm)
+
+---
+
+## 5. 한 줄 요약
+
+> Phase 1: 라우트·NavHost·웰컴·인증·회원가입·탈퇴복구·비밀번호재설정 골격 완료.

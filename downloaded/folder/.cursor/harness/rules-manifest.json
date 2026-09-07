@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "rules_dir": ".cursor/rules",
+  "cache_dir": ".cursor/harness/cache",
+  "token_budget_chars": 48000,
+  "roles": {
+    "planner": {
+      "label": "Harness Planner",
+      "always": [
+        "happy-core-kotlin.mdc",
+        "harness-loop.mdc",
+        "structure-kotlin.mdc",
+        "project-scope-kotlin.mdc"
+      ],
+      "type_extra": {
+        "B": ["atomic-design-kotlin.mdc", "do-not-repeat-kotlin.mdc"],
+        "C": ["atomic-design-kotlin.mdc", "do-not-repeat-kotlin.mdc", "terminology-glossary.mdc"]
+      }
+    },
+    "plan_evaluator": {
+      "label": "Harness Plan Evaluator",
+      "always": [
+        "happy-core-kotlin.mdc",
+        "structure-kotlin.mdc",
+        "atomic-design-kotlin.mdc",
+        "do-not-repeat-kotlin.mdc"
+      ]
+    },
+    "generator": {
+      "label": "Harness Generator",
+      "always": [
+        "happy-core-kotlin.mdc",
+        "structure-kotlin.mdc",
+        "atomic-design-kotlin.mdc",
+        "do-not-repeat-kotlin.mdc",
+        "terminology-glossary.mdc"
+      ],
+      "contract_path_extra": {
+        "5_pages": ["project-scope-kotlin.mdc"],
+        "navigation": ["project-scope-kotlin.mdc"],
+        "Route.kt": ["do-not-repeat-kotlin.mdc"]
+      }
+    },
+    "evaluator": {
+      "label": "Harness Evaluator",
+      "always": [
+        "happy-core-kotlin.mdc",
+        "structure-kotlin.mdc",
+        "atomic-design-kotlin.mdc",
+        "do-not-repeat-kotlin.mdc",
+        "terminology-glossary.mdc"
+      ],
+      "round_extra_from": 3,
+      "round_extra": ["project-scope-kotlin.mdc"]
+    },
+    "main": {
+      "label": "Harness Main (arm 시 1회)",
+      "always": [
+        "sprint-harness-gate.mdc",
+        "harness-subagents.mdc",
+        "harness-loop.mdc"
+      ]
+    }
+  }
+}

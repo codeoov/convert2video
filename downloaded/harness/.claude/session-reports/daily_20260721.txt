@@ -1,0 +1,182 @@
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 08:16:09
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 08:26:04
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 09:25:32
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 09:40:30
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 09:59:23
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 10:08:41
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 11:46:26
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 11:49:06
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 11:49:34
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 11:51:00
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 12:00:37
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 12:18:17
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-07-21 12:50:44
+Project : /Users/songwoosub/Sites/project1-next
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code.
+
+--- Transcript Analysis ---

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--
+        Exposes app-private external files under Movies/C2V/ via FileProvider.
+        Maps to Context.getExternalFilesDir(DIRECTORY_MOVIES)/C2V — never visible in gallery.
+        Matches C2vOutputNames.appStorageDir().
+    -->
+    <external-files-path
+        name="c2v_movies"
+        path="Movies/C2V/" />
+    <!--
+        Exposes app-private external files under Music/C2V/ via FileProvider.
+        Maps to Context.getExternalFilesDir(DIRECTORY_MUSIC)/C2V — recording storage.
+        Matches C2vRecordingNames.appStorageDir().
+    -->
+    <external-files-path
+        name="c2v_music"
+        path="Music/C2V/" />
+    <!--
+        Exposes app-private external files under Music/C2VImported/ via FileProvider.
+        Maps to Context.getExternalFilesDir(DIRECTORY_MUSIC)/C2VImported — import storage.
+        Matches ImportedAudioRepository.appStorageDir().
+    -->
+    <external-files-path
+        name="c2v_music_imported"
+        path="Music/C2VImported/" />
+</paths>

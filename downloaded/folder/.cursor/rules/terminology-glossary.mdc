@@ -1,0 +1,437 @@
+---
+description: "happy_v12 전체 용어 표 — DTO/모델/config 파일 작업 시 참조. 핵심 용어·동사·금지어는 happy-core-kotlin.mdc §2 요약 참고. 신규 용어 추가 시 §1 표에 등록."
+alwaysApply: false
+globs:
+  - "**/data/dto/**/*.kt"
+  - "**/data/remote/**/*.kt"
+  - "**/domain/model/**/*.kt"
+  - "**/config/**/*.kt"
+  - "htdocs/api/**/*.php"
+  - "htdocs/models/**/*.php"
+  - "htdocs/config/constants/**/*.php"
+---
+
+# 용어·변수명 사전 (Terminology Glossary) — happy_v12
+
+> **참조용 확장표** (DTO·모델·config 작업 시 로드). 최소 요약은 `happy-core-kotlin.mdc` §2, 목차는 `rules-index-kotlin.mdc`.
+
+**목적**: 용어·변수명 중복 방지. 신규 추가 시 이 문서에 등록 필수.
+
+---
+
+## 1. 도메인 용어
+
+| 한글 | 영문 (코드) | DB 컬럼 | Kotlin 변수/필드 | 비고 |
+|------|-------------|---------|------------------|------|
+| 모임 | gathering | gathering_id | gatheringId | activity, meetup 사용 금지 |
+| 예약 | booking | booking_id | bookingId | reservation 사용 금지 |
+| 회차 | session | session_id | sessionId | gatheringSessionId |
+| 마이페이지 | my_page | - | myPage | my_info 사용 금지 |
+| 성향·MBTI 라벨 | personality / MBTI label | mbti | mbti, UserProfileDto.mbti, save_user_field `mbti` | 마이페이지 문토 스타일 칩·프로필 편집. VARCHAR(16). 플레이스홀더 문자열 my_page_mbti_placeholder |
+| 모임 내역 탭 | gathering history tab | - | TAB_GATHERING_HISTORY, GATHERING_HISTORY_ITEMS, my_page_tab_gathering_history | 마이페이지 서브탭. 찜·내 예약 등. EN Gathering history / KO 모임 내역. activity(모임) 키·표시 금지 |
+| 마이페이지 다녀온 모임 목록 UI | gathering visit history (my page) | - | GatheringVisitHistoryRowUi, GatheringVisitHistoryReviewUi, MyPageGatheringVisitHistoryOrganism, GatheringVisitHistoryRowMolecule, my_page_visit_history_* | 모임 내역 탭 상단. 방문일·모임명·후기 미작성(별+후기 남기기)·작성됨(별+본문). 샘플은 GatheringVisitHistorySample; 실데이터는 Phase 6 API 연동 예정 |
+| 결제 내역 탭 | payment history tab | - | TAB_PAYMENT_HISTORY, my_page_tab_payment_history | 멤버 마이페이지 서브탭(플레이스홀더 가능) |
+| 정산 내역 탭 | settlement history tab | - | TAB_SETTLEMENT_HISTORY, my_page_tab_settlement_history | 멤버 마이페이지 서브탭(플레이스홀더 가능) |
+| 호스트 | host | host_user_id | hostUserId | |
+| 호스트 온보딩 | host onboarding | hostOnboarding, host_onboarding | HostOnboardingIntro, Form, Complete |
+| 호스트 프로필 | host profile | hostProfile, HostProfileDto | host_profile |
+| 호스트 사업자 유형 코드 | host business type code | business_type | HostBusinessTypeOptions, CODE_INDIVIDUAL, CODE_CORPORATE | API `individual` / `corporate`만 허용. 온보딩 폼 칩·`config/HostBusinessTypeOptions.kt` 단일 소스 |
+| 사용자(전역 계정) | user | user_id | userId | 전역 식별자. 사람 식별은 항상 userId 기준 |
+| 채팅 참여자 | chat participant | user_id | userId | 채팅방 맥락 참여자. userId는 전역 user와 동일 키 |
+| 메시지 이모지 반응 | message reaction | chats_message_reactions (`emoji_key`, `message_id`, `user_id`) | emojiKey, MessageReactionSummary | 사용자당 메시지당 1행·토글 제거. 허용 키 6종 고정. 정책 `docs/dev-records/kotlin/20260503_chat_message_reactions_policy_phase_r2.md`. API·DB에는 ASCII `emoji_key`만(유니코드 이모지 문자열 저장 금지). Phase R1 DDL `sql/091_create_chats_message_reactions.sql` |
+| 메시지 첨부 | message attachment | attachments (JSON) | AttachmentDto, AttachmentInfo, MessageInfo.attachments; 전송 시 SendMessageRequest.attachments: List&lt;SendMessageAttachmentRequest&gt; | 수신·목록: AttachmentDto (`data/dto/chat/AttachmentDto`). 발신: SendMessageAttachmentRequest (`data/dto/chat/SendMessageAttachmentRequest.kt`). 레거시 단일 이미지는 SendMessageRequest.imageUrl 병행. kind 값은 ChatConstants.MessageAttachmentKind와 동일 문자열. Phase H2 glossary·DTO 등록(do-not-repeat §5.2) |
+| 메시지 첨부 종류 코드 | message attachment kind | kind | ChatConstants.MessageAttachmentKind (`IMAGE`, `FILE`) | send_message `attachments[].kind`·AttachmentDto.kind와 동일. API·저장 문자열 하드코딩 금지(do-not-repeat §6.10) |
+| 채팅 음성 전송 (미구현) | chat voice message (not in scope) | - | Phase H1: 제거됨 — ChatRoomInputOrganism 더보기 패널 | 미디어 확장 계획에서 음성 제외. 전용 API·DTO 없음 |
+| 채팅 파일 첨부 제한 | chat file attachment limits | - | DomainLimits.CHAT_FILE_ATTACHMENT_MAX_BYTES, CHAT_FILE_ATTACHMENT_FILE_NAME_MAX_LENGTH, ChatConstants.FileAttachmentAllowedMime | OpenDocument·업로드 전 검증. MIME 화이트리스트·용량은 PHP·storage와 동기화(Phase F1) |
+| 말풍선 레거시 이미지(단일 image_url) | legacy-only bubble image (image_url) | image_url | `displaysImagesFromLegacyImageUrlOnly`, `AppSizes.chatBubbleLegacyImageMaxHeight` | attachments에 image 없고 imageUrl만 있을 때 말풍선은 Crop+높이 상한. 첨부 기반 단일 이미지는 Fit. `utils/ui/ChatMessageImageUrls.kt` |
+| 실시간 채팅 이벤트 | realtime event | - | RealtimeEvent (`NewMessage`, `ReadReceipt`, `Disconnected`, `Reconnecting`, `Reconnected`) | Socket.IO 등 게이트웨이→도메인 통일 타입. domain/chat/RealtimeEvent.kt |
+| 메시지 읽음 실시간 처리 분기 | message read handling mode | - | `MessageReadHandlingMode`, `MessageReadRealtimePolicy` | Phase 10: `BubblesOnly` / `ChatListOnly` / `BubblesAndChatList` / `Ignored`. 문서상 MessageRead = `ReadReceipt` typealias |
+| 채팅 목록 신규 메시지 패치 | chat list new message policy | - | `ChatListNewMessagePolicy` | Phase 13–14: `NewMessage` 시 미리보기·조건부 `unreadCount` +1; 포그라운드 방이면 0 + `ChatListViewModel`에서 `markAsRead`. 행 없으면 목록 API 동기화 |
+| 채팅 목록 자기 읽음 패치 | chat list self read receipt policy | - | `ChatListSelfReadReceiptPolicy` | Phase 15: `ReadReceipt.readerUserId`가 나면 해당 행 `unreadCount = 0`(다른 기기 동기화). 행 없으면 목록 API 동기화 |
+| 실시간 채팅 클라이언트 계약 | realtime client | - | RealtimeClient | Socket.IO 등 추상화. app/domain/contracts/RealtimeClient.kt. 구현은 data/adapters 단일 소스 |
+| 실시간 소켓 이벤트명 | realtime socket event | - | ChatConstants.RealtimeSocket (예: NEW_MESSAGE) | 앱·게이트웨이 합의 문자열. magic value 금지 |
+| 소켓 페이로드 → 도메인 매핑 | socket realtime event mapper | - | SocketIoRealtimeEventMapper | `data/adapters/SocketIoRealtimeEventMapper.kt` 단일 소스 |
+| 메시지 삭제 타입 상수 | message delete type | delete_type | MessageDeleteType (`FOR_ME`, `FOR_EVERYONE`) | domain/chat/MessageDeleteType.kt. delete_message API·`MessageRepository.deleteMessage` 기본값·UI 전달 공통. 문자열 하드코딩 금지 |
+| 모임 참여자 | gathering participant | user_id | userId | 모임 맥락 참여자. booking 등 도메인 정보는 별도 필드로 관리 |
+| 찜 | wishlist | gathering_wishlists | wishlistedGatherings | |
+| 찜 목록 빈 안내 문구 | wishlist empty message | gathering_wishlist_empty | R.string.gathering_wishlist_empty | 찜 목록이 비어 있을 때 표시 |
+| 추천인 코드 | referral | referral_code | referralCode | save_user_field 필드명 |
+| 결제 | payment | payment_id | paymentId | |
+| 정산 | settlement | - | HostSettlementItemDto, HostSettlementViewModel, list_host_settlements | 호스트 정산 관리. 정산 탭·상세. 정산 목록 scope 필터는 `gatheringId` 기준. |
+| 정산 상세 | settlement detail | - | HostSettlementDetailScreen, Route.HOST_SETTLEMENT_DETAIL | 정산 항목 탭 시 진입. selectedSettlementItem 공유. |
+| 호스트 서랍 섹션(운영) | host sidebar section operations | host_sidebar_section_operations | `HostSidebarSheetContentOrganism` | 홈·관리 그룹. 정적 섹션 제목 행 아래 항목 항상 표시. 접기 없음. |
+| 호스트 서랍 섹션(성과) | host sidebar section performance | host_sidebar_section_performance | `HostSidebarSheetContentOrganism` | 통계·정산 그룹. 정적 섹션 제목 행 아래 항목 항상 표시. 접기 없음. |
+| 호스트 서랍 섹션(지원) | host sidebar section support | host_sidebar_section_support | `HostSidebarSheetContentOrganism` | 도움말·문의하기 그룹(설정 행은 지원 화면 앱바 톱니·별도 Route로 이전). 정적 섹션 제목 행 아래 항목 항상 표시. 접기 없음. 재구성 Phase 1~ 적용. |
+| 호스트 셸 템플릿 | host shell template | - | `HostShellTemplate` | `4_templates/host_1_home`. 드로어·앱바·`ScaffoldWithBottomNavTemplate` 골격. Page에서 직접 `ModalNavigationDrawer` 사용 금지 — 이 템플릿 경유. Phase B. |
+| 호스트 셸 콘텐츠 템플릿 | host shell content template | - | `HostShellContentTemplate` | `4_templates/host_1_home`. 주 메뉴(HOME·MANAGE·STATS·SETTLEMENT) 분기 + `HostOverviewWorkspaceRequiredGuardOrganism` 조립. Phase C. |
+| 호스트 셸 서랍 템플릿 | host shell drawer template | - | `HostShellDrawerTemplate` | `4_templates/host_1_home`. `ModalNavigationDrawer` drawer 슬롯에서 `HostShellModalDrawerSheetOrganism` 조립. 이벤트는 `HostShellDrawerCallbacks`. Phase F3. |
+| 호스트 셸 서랍 콜백 묶음 | host shell drawer callbacks | - | `HostShellDrawerCallbacks` | `4_templates/host_1_home`. 서랍 `onScopeSelected` 등 5종; `HostHomeScreen`이 `remember`로 구성해 전달. Phase F3. |
+| 호스트 홈 탭 목록 템플릿 | host home tab list template | - | `HostHomeTabListTemplate` | `4_templates/host_1_home`. 홈 탭 내 모임 목록만 `HostHomeListBodyOrganism`으로 감싼다. 셸 전체는 `HostShellTemplate`. 구 이름 `HostHomeTemplate`(Phase F4 리네임). |
+| 호스트 관리 임베드 템플릿 | host manage shell embedded template | - | `HostManageShellEmbeddedTemplate` | `4_templates/host_1_home`. 관리 탭 `NavHost` 시각 컨테이너(셸 임베드 전용). 그래프·경로 판별은 `5_pages/host_1_home/HostManageTabNavGraph.kt`(`hostManageTabNavDestinations`, `HostManageTabNavRoutes`). `host_2_manage`의 `HostManageTemplate`(목록 레이아웃)과 혼동 금지. Phase D. |
+| 호스트 관리 탭 nested Nav 경로 | host manage tab nested nav routes | `HOST_HOME_MANAGE_TAB_LIST`, `HOST_HOME_EMBEDDED_MANAGE_MY_GATHERING` | `HostManageTabNavRoutes`, `hostManageTabNavDestinations` | `5_pages/host_1_home/HostManageTabNavGraph.kt`. 임베드 모임 관리 destination 판별(`destinationIsEmbeddedManage`)·NavHost composable 등록. 단위 테스트 `HostManageTabNavRoutesTest`. 진입·`hubNavBackStackEntry`·`omitTopBar` 표는 `docs/dev-records/kotlin/20260413-host-2-manage-hub-atomic-phases-1-4-completion.md` §1. |
+| 호스트 허브·모임 관리 스캐폴드 메인 컬럼 | host hub manage scaffold main column | - | `HostGatheringHubManageScaffoldMainColumn` | `5_pages/host_2_manage/HostGatheringHubPageChrome.kt`. `HostGatheringHubScreen`·`ManageMyGatheringScreen`의 `ScaffoldTemplate` content — DEBUG 버튼 아래 `ColumnScope` 슬롯. `HostGatheringHubDebugAdminButtons`와 쌍. |
+| 호스트 셸 화면 상태 | host shell screen state | - | `HostShellScreenState` | `state/host_1_home`. 앱바 제목·가드 플래그·서랍 데이터·정산 범위 파생값을 하나로 묶은 셸 UI 계약. `HostHomeScreen`에서만 매핑. Phase E. |
+| 호스트 셸 앱바 크롬 | host shell top bar chrome | - | `HostShellTopBarChrome` | `state/host_1_home`. 앱바 l10n 분기(주 탭·관리 임베드 허브·통계/정산 Single). Phase F5. |
+| 호스트 셸 앱바 크롬 결정 | host shell top bar chrome resolution | - | `resolveHostShellTopBarChrome` | `5_pages/host_1_home/HostShellTopBarChromeResolver.kt`. ViewModel 주 메뉴·범위·관리 내부 라우트 → `HostShellTopBarChrome`. Phase F5. |
+| 호스트 지원 허브 | host support hub | HOST_SUPPORT_HUB, `?tab=` | `Route.HOST_SUPPORT_HUB`, `HostSupportHubNav`, `HostNavDestinations.hostSupportHub` | 단일 화면·상단 탭 **도움말·문의하기(2탭)**. Screen·Template·state·지원 전용 유기체는 Atomic `host_support` 트리(`5_pages/host_support`, `4_templates/host_support`, `3_organisms/host_support`, `state/host_support`). 설정 목록은 `Route.HOST_SUPPORT_SETTINGS`, `HostNavDestinations.hostSupportSettings`, `HostSupportSettingsScreen`(앱바 톱니). 쿼리 `tab` 단일 소스 `HostSupportHubNav`. 레거시 `tab=2`는 도움말로 정규화. 문의는 dispute 티켓 재사용. |
+| 호스트 모임 범위 피커 | host gathering scope picker | - | `HostGatheringScopePickerContentOrganism`, `HostGatheringScopePickerFullScreenDialogOrganism`, `HostGatheringViewModel` (`selectedGatheringScope`, `displayGatherings`) | **전체** 범위 한 줄 + 모임 목록. 시트 상단 계정 등은 전면 다이얼로그 연동 시 사용. 뒤로: `BackHandler`·툴바·`onDismissRequest`로 시트 닫기. l10n: `host_gathering_scope_*`, `host_gathering_scope_picker_title`, `host_gathering_scope_picker_empty_all`. 서랍 상단 범위 전환 행은 제거됨(Phase 3). |
+| 호스트 홈 저장 범위(명시적 전체) | host home saved scope explicit all | `GATHERING_SCOPE_EXPLICIT_ALL` | `Route.HostHomeSavedState.GATHERING_SCOPE_EXPLICIT_ALL`, `HostGatheringViewModel.persistGatheringScopeToSavedState` | `true`면 사용자가 **전체 모임**을 명시 선택(시스템 뒤로·딥링크 0 등). `false`/없음 + 단일 id 없음이면 로드 후 **첫 모임** `Single` 보정(Phase 4). |
+| 호스트 통계 탭 | host stats tab | - | HostStatsTab, HostStatsPage, HostStatsTabTemplate, HostStatsOverviewTemplate, HostStatsViewModel, ui/views/state/host_3_stats | 호스트 셸 통계 구역(서랍 전환). 전체 집계·모임별 카드(샘플; API 후속). **Phase ST0 기준**은 아래 호스트 통계 기간·지표 표. |
+| 호스트 모임 통계 상세 | host gathering stats detail | HOST_GATHERING_STATS_DETAIL | HostGatheringStatsDetailScreen, HostGatheringStatsDetailLoadableOrganism, HostGatheringStatsDetailViewModel, HostNavDestinations.hostGatheringStatsDetail | 모임별 상세 통계(기간·퍼널·전월 대비·리뷰; 샘플). 로딩·에러·스크롤 래퍼는 Loadable 유기체. |
+| 호스트 통계 기간 코드 | host stats period code | period 또는 동등 쿼리 | `HostStatsPeriodFilter.code` | API·요청 DTO와 **동일 문자열** 유지: `7d`(최근 7일), `30d`(최근 30일), `mom`(전월 대비). Phase ST0 단일 소스. |
+| 최근 7일(호스트 통계) | last 7 days (host stats) | - | `HostStatsPeriodFilter.Last7Days`, code `7d` | **오늘 0시(또는 서버 기준 시각)에서 역산 7일** rolling 윈도. 달력 월과 무관. |
+| 최근 30일(호스트 통계) | last 30 days (host stats) | - | `HostStatsPeriodFilter.Last30Days`, code `30d` | **역산 30일** rolling 윈도. |
+| 전월 대비(호스트 통계) | month-over-month (host stats) | - | `HostStatsPeriodFilter.VsLastMonth`, code `mom` | **직전 달력 월** 대비 증감(퍼센트 포인트). rolling 30일과 **혼동 금지**. `host_stats_comparison_subtitle` 문구와 일치. |
+| 체크인 건수(통계) | check-in event count (stats) | - | `HostStatsAggregateUi.totalCheckIns`, `HostStatsGatheringSummaryUi.checkIns` | 입장 확인(check-in) **완료 횟수** 합계. 동일 user·다회차면 **여러 번 가산**. “고유 참가자 수”와 다름. |
+| 고유 참가자 수(통계) | unique participant count (stats) | total_unique_participants | `HostStatsAggregateUi.totalUniqueParticipants`, `HostStatsAggregateDto.totalUniqueParticipants`, `host_stats_total_unique_participants` | 기간 내 **서로 다른 userId** 수. 체크인 건수(`totalCheckIns`)와 별도. **Phase ST4** 반영. |
+| 이번 달 예약(통계) | bookings this calendar month (stats) | - | `HostStatsGatheringSummaryUi.bookingsThisMonth` | **현재 달력 월** 기준 예약 건수(상태 필터는 API와 합의: 예: confirmed만). |
+| 호스트 통계 views 트리 | host stats views tree | - | `host_3_stats` | Atomic Design: `3_organisms/host_3_stats`, `4_templates/host_3_stats`, `5_pages/host_3_stats`, `5_pages/host_3_stats/routes`, `ui/views/state/host_3_stats`. 탭 진입은 `HostStatsTab`(host_1_home) → `HostStatsPage`. **Phase ST1** 단일 소스. |
+| 호스트 통계 목록 화면 상태 | host stats screen state | - | `HostStatsScreenState` | `aggregate` + `gatherings`. `HostStatsOverviewTemplate` 입력; ViewModel `UiState`→Screen에서만 매핑. |
+| 호스트 통계 전체 집계 UI | host stats aggregate UI | - | `HostStatsAggregateUi` | 전체 모임 합산 카드: `totalCheckIns`, `totalUniqueParticipants`, 성별·연령. 집계·비식별 전제(ST0). 연령 줄은 `host_stats_age_band_line`. |
+| 호스트 통계 모임 요약 UI | host stats gathering summary UI | - | `HostStatsGatheringSummaryUi` | 모임 카드: 제목, 이번 달 예약, 체크인, 평균 별점, 리뷰 수, 다음 회차 한 줄, 조회·찜 줄, `momBookingsDeltaPercent`. |
+| 호스트 통계 상세 UI | host stats detail UI | - | `HostStatsDetailUi` | `HostGatheringStatsDetailScreen` 본문. `period`, `funnel`, MoM 증감 3종, 리뷰 평균·건수, 별점 분포, `reviewKeywordLabels`. |
+| 호스트 통계 퍼널 UI | host stats funnel UI | - | `HostStatsFunnelUi` | `impressions`(노출) → `detailViews`(상세 조회) → `bookings`(예약 전환). 정의·채널은 API·분석과 합의; 현재 샘플. |
+| 호스트 통계 별점 분포 UI | host stats star distribution UI | - | `HostStatsStarDistributionUi` | `star5`…`star1` 리뷰 건수. |
+| 전월 대비 변화율(통계) | month-over-month delta percent (stats) | - | `momBookingsDeltaPercent`, `momCheckInsDeltaPercent`, `momImpressionsDeltaPercent` | **퍼센트 포인트**(예: +12.0 ⇒ +12%). API는 `mom_bookings_delta_percent` 등 snake_case 권장. `mom` 기간은 ST0 달력 월 대비. |
+| 호스트 통계 리뷰 키워드 라벨 | host stats review keyword labels | - | `HostStatsDetailUi.reviewKeywordLabels` | `List<Int>` = `R.string.*` ID. 칩 표시용; 실제 키워드 추출은 NLP 후속. |
+| 호스트 통계 접근성 문구 | host stats a11y strings | - | `host_stats_a11y_*` (`values`·`values-ko`) | TalkBack용: 모임 카드(`host_stats_a11y_gathering_card`), 집계 제목(`host_stats_a11y_aggregate_card`), 기간 칩(`host_stats_a11y_period_filter*`), 퍼널 막대·별점 행·MoM 행. **semantics 람다 안 `stringResource` 금지** — Composable에서 미리 변수로. **Phase ST6**. |
+| 통계 라벨 진행 행 분자 | stats labeled ratio progress row molecule | - | `StatsLabeledRatioProgressRowMolecule` | `2_molecules/displays/`. 라벨·값·최대 대비 `LinearProgressIndicator` + a11y. 호스트 통계 퍼널(`HostStatsDetailFunnelOrganism`). |
+| 통계 별점 막대 행 분자 | stats star bar row molecule | - | `StatsStarBarRowMolecule` | `2_molecules/displays/`. 별점 구간별 건수 막대 + a11y. `HostStatsDetailReviewOrganism`. |
+| 통계 전월 대비 행 분자 | stats month-over-month delta row molecule | - | `StatsMonthOverMonthDeltaRowMolecule` | `2_molecules/displays/`. 라벨 + 증감 퍼센트(`host_stats_delta_percent`). `HostStatsDetailMomOrganism`. |
+| 통계 기간 칩 분자 | stats period assist chip molecule | - | `StatsPeriodAssistChipMolecule` | `2_molecules/chips/`. 7d/30d/mom 선택. `HostStatsDetailPeriodFilterOrganism`. |
+| 통계 읽기 전용 칩 분자 | stats read-only assist chip molecule | - | `StatsReadOnlyAssistChipMolecule` | `2_molecules/chips/`. 리뷰 키워드 칩(탭 비활성). `HostStatsDetailReviewOrganism`. |
+| 호스트 통계 디버그 강제 실패 | debug force host stats load error | - | `DebugUiOptions.forceHostStatsOverviewLoadError`, `forceHostStatsDetailLoadError` | DEBUG만 true 가능. `HostStatsRepository`가 목록/상세 stub에서 `Result.Error` 반환 → 에러·재시도 UI 검증. Release는 항상 false. |
+| 영수증 | receipt | - | receiptDownloadUrl, downloadUrl | |
+| 피드 | feed | feed_id | feedId | feed_api.php, 라운지 |
+| 피드 모임 유형 라벨 | feed gathering type label | gathering_type_label | gatheringTypeLabel | FeedDto·FeedCard 문토 스타일 태그(예: 소셜링). Phase 9-4 |
+| 피드 장소 표시 | feed location display | location_display | locationDisplay | FeedDto·FeedCard 문토 스타일 장소·날짜 줄. Phase 9-4 |
+| 피드 더미 데이터 | feed dummy data | - | DummyFeeds.list() | API 실패/빈 목록 시 라운지 미리보기용. data/dto/feed/DummyFeeds.kt. Phase 9-1 |
+| 라운지 1단계 탭 | lounge primary tab | - | lounge_tab_feed, lounge_tab_place | 피드/장소. MemberHomeScreen **하단** `selectedTab==2`(라운지)일 때 상단 ScrollableTabRow. Phase 9-2 |
+| 멤버 홈 하단 탭 바 | member home bottom nav | - | member_home_tab_home, member_home_tab_discovery, member_home_tab_lounge, member_home_tab_chats, member_home_tab_my_page | 5탭 라벨 l10n. 인덱스 0=홈, 1=발견, 2=라운지, 3=채팅, 4=마이페이지 |
+| 발견 탭 views 트리 | discovery tab views tree | - | member_2_discovery | Atomic Design·state: `3_organisms/member_2_discovery`, `4_templates/member_2_discovery`, `5_pages/member_2_discovery`, `ui/views/state/member_2_discovery` 가 **발견(및 동일 브라우즈 플로우) UI 단일 소스**. `structure-kotlin.mdc` §1.5 Phase D 표 |
+| 멤버 홈 하단 탭 지정 | member home bottom tab intent | - | Route.MemberHomeSavedState.BOTTOM_TAB, DeepLinkViewModel.NavRequest.memberHomeBottomTab | 푸시·`DeepLinkBinder`가 HOME에 기록, `MemberHomeScreen`이 소비 후 remove. Phase D3 |
+| 라운지 필터 탭 | lounge filter tab | - | lounge_filter_latest, lounge_filter_discover, lounge_filter_popular, lounge_filter_gathering_review, lounge_filter_editor_pick | 최신/발견/인기/모임 후기/취향 에디터. 피드 탭 선택 시 가로 스크롤. Phase 9-3 |
+| 로그인 기록 | login history | - | loginHistory, loginAt | auth_api get_login_history |
+| 문의 | dispute | - | dispute | dispute_api.php |
+| 문의 티켓 | ticket | ticket_id | ticketId | dispute tickets |
+| 문의 티켓 목록 유기체 | dispute tickets list organism | - | DisputeTicketsListOrganism | DisputeMyTicketsScreen 목록·로딩·에러·빈 상태. 3_organisms/member_5_mypage |
+| 문의 티켓 상세 유기체 | dispute ticket detail organism | - | DisputeTicketDetailOrganism | 티켓 상세·스레드·답장 입력. 3_organisms/member_5_mypage |
+| 문의 티켓 메시지 유기체 | dispute ticket message organism | - | DisputeTicketMessageOrganism | dispute 메시지 말풍선 카드. 3_organisms/member_5_mypage |
+| 부정 사용 방지 | device fingerprint | device_fingerprint_enabled | deviceFingerprintEnabled | 지문/생체 인증 |
+| 리뷰 | review | gathering_reviews, review_id | GatheringReviewDto, reviewId | 모임 리뷰 |
+| 답글 | reply | review_replies | ReviewReplyDto, replyId | 리뷰 답글 |
+| 티켓 토큰 | ticketToken | ticket_token | ticketToken | QR 스캔·입장 확인용 |
+| QR 이미지 URL | QR image URL | - | QrCodeUtils.buildQrImageUrl | 예약 티켓 QR 표시. api.qrserver.com URL 생성. utils/QrCodeUtils.kt |
+| 체크인 | checkIn | checked_in_at | checkedInAt | 입장 확인 완료 시각 |
+| 노쇼 | no_show | no_show_at | noShowAt | 예약 상태 no_show |
+| 드래프트 | draft | - | CreateGatheringDraftStore, saveDraft, loadDraft | 모임 만들기 임시 저장 |
+| 배너 | banner | banner_id | bannerId, AdminBannerDto | 프로모션/이벤트 배너, admin_api |
+| 푸시 토큰 | pushToken | push_token | pushToken | OneSignal 구독 ID, save_push_token |
+| 인앱 알림(멤버) | in-app notification (member) | user_in_app_notifications | NotificationItemDto, list_notifications | 앱 알림 탭 피드. `notification_queue`(이메일/SMS 큐)와 별도 테이블. gathering_api |
+| 알림 권한 요청 | notification permission request | requestNotificationPermission | OneSignal.Notifications.requestPermission(false) | 로그인/세션 복원 직후 1회. PushTokenSender.sendTokenAfterLogin() 내부 |
+| 초대 링크 토큰 | inviteLinkToken | token | inviteLinkToken | chat/join?token=, join_by_invite_link |
+| 딥링크 | deep link | - | PendingDeepLinkHolder, DeepLinkViewModel | myapp://chat/join, myapp://invite?ref=, myapp://restore?token=, myapp://verify-email?token=, myapp://verify-email-signup?token= |
+| 이메일 인증 딥링크 | email verification deep link | - | InviteLinkUtils.parseEmailVerificationToken, isSignupVerificationLink | myapp://verify-email?token= (이메일 변경), myapp://verify-email-signup?token= (회원가입). auth_api.php에서 발송, token은 rawurlencode |
+| 탈퇴 복구 | restore | - | RestoreRequestScreen, RestoreConfirmScreen, restore_request, restore_confirm | auth_api restore_request, restore_confirm |
+| 복구 토큰 | restoreToken | token | parseRestoreToken | myapp://restore?token=xxx |
+| 모임 리뷰 작성 | gathering review write | - | GatheringReviewWriteScreen, create_review | gathering_api create_review |
+| 정지/휴면 계정 | account blocked | - | AccountBlockedScreen, suspended, dormant | status가 suspended/dormant일 때 |
+| 전화번호 회원가입 | phone signup | - | PhoneSignupScreen, PhoneVerifySignupScreen | auth_api send_otp, verify_phone_number |
+| 국가 코드 | country code | - | CountryCodeUtil, CountryCodeSelector, CountrySelectionDialog | 전화번호 국가 코드. utils/CountryCodeUtil, ui/views/2_molecules/ |
+| 전화번호 인증 | phone verify | - | verifyPhoneNumber, otp | OTP 검증 후 기본정보 입력으로 |
+| 구글 로그인 추가 정보 | google auth additional info | - | GoogleAuthAdditionalInfoScreen, update_additional_info | 구글 신규 사용자 전화번호 입력, GOOGLE_AUTH_ADDITIONAL_INFO |
+| 구글 로그인 전화번호 인증 | google auth phone verify | - | GoogleAuthPhoneVerifyScreen, GOOGLE_AUTH_PHONE_VERIFY | 구글 신규 → 전화번호 저장 후 OTP 인증 |
+| 이메일 로그인 | email login | EMAIL_LOGIN | EmailLoginScreen, EmailLoginViewModel | 이메일+비밀번호 한 화면. 복구·이메일·전화번호 변경 후 진입용 |
+| 이메일 변경 2단계 | email change 2-step | send_email_verification_link | sendEmailVerificationLinkForChange, ChangeEmailViewModel | 새 이메일 입력 → 인증 링크 발송 → 링크 클릭 후 변경 완료. 비밀번호 불필요 |
+| 미완료 가입 취소 | delete incomplete signup | delete_incomplete_signup | deleteIncompleteSignup | EmailVerificationScreen "가입 취소". auth_api delete_incomplete_signup |
+| 이메일 로그인 링크 | email login link | send_email_login_link | sendEmailLoginLink | EmailLoginScreen "로그인 링크 받기". 비밀번호 없이 이메일 링크 로그인 |
+| 구글 맵 장소 선택 | Google Map Picker | GOOGLE_MAP_PICKER | GoogleMapPickerScreen, GeocodingUtils | 모임 만들기 4단계 장소 선택. Places SDK Autocomplete. 지오코딩은 utils/GeocodingUtils.kt |
+| 프로필 보기 | profile view | - | ProfileViewScreen, PROFILE_VIEW, PublicProfileDto | 다른 사용자 공개 프로필. get_user_profile API |
+| 세로 카드 더보기 | vertical card more | - | VerticalCardMoreScreen, VerticalCardMoreViewModel, VERTICAL_CARD_MORE | 홈 가로 섹션 "더보기" 진입. sectionType: featured, popular, recommended, new. 리스트 카드는 모두 CardItemImageLeft. 템플릿만 섹션별. HOME_VERTICAL_MORE 펼침 공통. |
+| featured 더보기 리스트 유기체 | featured more list organism | - | FeaturedMoreListOrganism | featured 섹션 더보기 본문 리스트. CardItemImageLeft. 초기 표시·펼침은 DomainLimits.HOME_VERTICAL_MORE_* (popular·recommended와 공통). 하단 더 보기 featured_more_load_more + ActionButtonRowMolecule. 3_organisms/member_1_home/featured_more |
+| featured 더보기 템플릿 | featured more template | - | FeaturedMoreTemplate | featured 더보기 화면 셸. 4_templates/member_1_home |
+| 인기 더보기 리스트 유기체 | popular more list organism | - | PopularMoreListOrganism | popular 섹션 더보기 본문. FeaturedMoreListOrganism과 동일 계열(CardItemImageLeft·더 보기). 3_organisms/member_1_home/popular_more |
+| 인기 더보기 템플릿 | popular more template | - | PopularMoreTemplate | popular 더보기 화면 셸. PopularMoreListOrganism 위임. 4_templates/member_1_home |
+| 맞춤 추천 더보기 리스트 유기체 | recommended more list organism | - | RecommendedMoreListOrganism | recommended 섹션 더보기 본문. CardItemImageLeft(featured/popular 더보기와 동일 계열). 3_organisms/member_1_home/recommended_more |
+| 맞춤 추천 더보기 템플릿 | recommended more template | - | RecommendedMoreTemplate | recommended 더보기 화면 셸. RecommendedMoreListOrganism 위임. 4_templates/member_1_home |
+| 찜 목록 리스트 유기체 | wishlist list organism | - | WishlistListOrganism | 찜 목록 본문 리스트. CardItemImageLeft 기반. 3_organisms/member_1_home/wishlist |
+| 찜 목록 템플릿 | wishlist template | - | WishlistTemplate | 찜 목록 화면 셸. GatheringWishlistScreenState + WishlistListOrganism. 4_templates/member_1_home |
+| 찜 목록 화면 상태 | gathering wishlist screen state | - | GatheringWishlistScreenState | 유기체·템플릿 시그니처. GatheringListUiState→Screen에서만 매핑(DEBUG 더미 목록 반영). ui/views/state/member_1_home |
+| 알림 화면 상태 | notifications screen state | - | NotificationsScreenState | 유기체·템플릿 시그니처. NotificationsUiState→Screen에서만 매핑. ui/views/state/member_1_home |
+| 맞춤 추천 모임 목록 유기체 | gathering recommended list organism | - | GatheringRecommendedListOrganism | 맞춤 추천 로딩·에러·빈·GatheringCard 목록. 3_organisms/member_1_home/recommended |
+| 맞춤 추천 모임 템플릿 | gathering recommended template | - | GatheringRecommendedTemplate | 맞춤 추천 화면 셸. GatheringRecommendedListOrganism 위임. 4_templates/member_1_home |
+| 맞춤 추천 화면 상태 | gathering recommended screen state | - | GatheringRecommendedScreenState | 유기체·템플릿 시그니처. ViewModel→Screen에서만 매핑. ui/views/state/member_1_home |
+| 맞춤 추천 빈 안내 | gathering recommended empty | gathering_recommended_empty | R.string.gathering_recommended_empty | 관심사 설정 시 맞춤 추천 안내 |
+| 내 예약 목록 유기체 | my bookings list organism | - | MyBookingsListOrganism | 내 예약 카드·취소 확인 다이얼로그. 3_organisms/member_1_home/my_bookings |
+| 내 예약 템플릿 | my bookings template | - | MyBookingsTemplate | 내 예약 화면 셸. Snackbar·MyBookingsListOrganism. 4_templates/member_1_home |
+| 내 예약 화면 상태 | my bookings screen state | - | MyBookingsScreenState | 유기체·템플릿 시그니처. ViewModel→Screen에서만 매핑. ui/views/state/member_1_home |
+| 예약 티켓 본문 유기체 | booking ticket content organism | - | BookingTicketContentOrganism | 티켓·QR·결제·영수증·취소 다이얼로그. 3_organisms/member_1_home/booking_ticket |
+| 예약 티켓 템플릿 | booking ticket template | - | BookingTicketTemplate | 예약 티켓 화면 셸. BookingTicketContentOrganism 위임. 4_templates/member_1_home |
+| 예약 티켓 화면 상태 | booking ticket screen state | - | BookingTicketScreenState | 유기체·템플릿 시그니처. ViewModel→Screen에서만 매핑. ui/views/state/member_1_home |
+| 예약 결제 요청 결과(UI) | booking payment request outcome | - | BookingPaymentRequestOutcome | 결제 URL 성공/실패. ViewModel은 onSuccess(url)·onError(msg)만; Screen에서 이 타입으로 매핑. ui/views/state/common |
+| 모임 리뷰 작성 화면 상태 | gathering review write screen state | - | GatheringReviewWriteScreenState | 유기체·템플릿 시그니처. ViewModel→Screen에서만 매핑. ui/views/state/member_1_home |
+| 멤버 홈 화면 상태 | member home screen state | - | Member1HomeScreenState | Member1HomeBannerState·GatheringsState·NewSectionState 등 nested. HomeTabUiState→Screen만 매핑. ui/views/state/member_1_home |
+| 모임 상세 화면 상태 | gathering detail screen state | - | GatheringDetailScreenState | GatheringDetailLoadState·ContentState·BookingState·WishlistState nested. GatheringDetailUiState+DEBUG→Screen만 매핑. ui/views/state/member_1_home |
+| 세로 카드 더보기 리스트 상태 | vertical card more list state | - | VerticalCardMoreListState | featured/popular/recommended/new 더보기 공통 리스트 구역. ui/views/state/member_1_home |
+| 세로 카드 더보기 화면 상태 | vertical card more screen state | - | VerticalCardMoreScreenState | 더보기 템플릿 시그니처. GatheringListUiState→Screen에서만 매핑. ui/views/state/member_1_home |
+| 모임 검색 필터 상태 | gathering search filter state | - | GatheringSearchFilterState | 지역·카테고리·날짜 칩. ui/views/state/member_1_home |
+| 모임 검색 결과 상태 | gathering search results state | - | GatheringSearchResultsState | 목록·페이징·에러. ui/views/state/member_1_home |
+| 모임 검색 랜딩 패널 상태 | gathering search landing pane state | - | GatheringSearchLandingPaneState | 배너·최근 검색어. ui/views/state/member_1_home |
+| 모임 검색 화면 상태 | gathering search screen state | - | GatheringSearchScreenState | 검색 템플릿·본문 분기. ViewModel→Screen에서만 매핑. ui/views/state/member_1_home |
+| 모임 리뷰 작성 무효 유기체 | gathering review write invalid organism | - | GatheringReviewWriteInvalidOrganism | gatheringId 없을 때 안내. 3_organisms/member_1_home/gathering_review_write |
+| 모임 리뷰 작성 폼 유기체 | gathering review write form organism | - | GatheringReviewWriteFormOrganism | 별점·본문·사진·제출. 3_organisms/member_1_home/gathering_review_write |
+| 모임 리뷰 작성 템플릿 | gathering review write template | - | GatheringReviewWriteTemplate | 리뷰 작성 셸. invalid/폼 분기·Snackbar 선택. 4_templates/member_1_home |
+| 신규 모임 더보기 리스트 유기체 | new gathering more list organism | - | NewGatheringMoreListOrganism | 신규 모임 세로 더보기 본문. CardItemImageLeft. 3_organisms/member_1_home/new_more |
+| 신규 모임 더보기 템플릿 | new more template | - | NewMoreTemplate | 신규 모임 더보기 셸. NewGatheringMoreListOrganism 위임. 4_templates/member_1_home |
+| 모임 검색 최근 저장 최대 개수 | gathering search recent max | SEARCH_RECENT_MAX | DomainLimits | 최근 검색어 DataStore 상한. Phase 0 |
+| 모임 검색 최근 검색어 저장소 | gathering search recent store | - | GatheringSearchRecentStore | DataStore JSON 리스트. data/local. Phase 1 |
+| 모임 검색 템플릿 | gathering search template | - | GatheringSearchTemplate | TopAppBar navigationIcon 뒤로 + title 검색 행+본문. 선택 [scrollBehavior]. 4_templates/member_1_home. 문토 Phase 2·6·7 |
+| 모임 검색 랜딩 유기체 | gathering search landing organism | - | GatheringSearchLandingOrganism | 최근(항상 제목·빈 안내)→추천→배너(또는 프로모). 선택 `topBarNestedScrollConnection`+verticalScroll. 문토 Phase 3·8 |
+| 모임 검색 최근 없음 안내 | gathering search recent empty | gathering_search_recent_empty | Text | 랜딩 최근 검색 칩 없을 때 |
+| 배너 탭 해석 | banner tap resolve | - | BannerLinkTapUtils.resolve, BannerTapResult | gathering→OpenGathering, url→http(s) OpenExternalUrl, else None. do-not-repeat §6.12 |
+| 배너 모임 ID 조회 | banner gathering id | - | BannerLinkTapUtils.gatheringIdOrNull | resolve 기반 편의. 테스트·단순 호출 |
+| 외부 URL 열기 헬퍼 | external url open helper | - | ExternalUrlOpenHelper.tryOpenHttpOrHttpsUrl | ACTION_VIEW http(s). helpers/. §6.12 |
+| 배너 링크 열기 실패 | banner link open failed | banner_link_open_failed | Snackbar | 홈·검색 배너 URL 실패 시 |
+| 모임 검색 랜딩 배너 | gathering search landing banners | - | searchBanners, loadSearchBanners | list_banners·BannerRepository. 랜딩에서 `BannerSliderOrganism`(또는 `import … as BannerSlider`). 배너 없으면 해당 구역 미표시. Phase 8 |
+| 모임 검색 랜딩 복귀 | gathering search return to landing | - | returnToLanding | 결과→랜딩. 키워드·필터 유지. 진행 중 API는 hasSearched false면 폐기. 앱바 gathering_search_back_to_explore |
+| 모임 검색 제출 허용 정책 | gathering search submit policy | - | GatheringSearchPolicy.hasKeywordOrFilter, GatheringSearchViewModel.search | 키워드 trim·필터 null. utils 단일 소스, ViewModel 위임. do-not-repeat §6.11 |
+| 모임 검색 빈 제출 안내 | gathering search need keyword or filter | gathering_search_need_keyword_or_filter | Snackbar | GatheringSearchScreen performSearch |
+| 검색 섹션 제목 행 분자 | search section title row molecule | - | SearchSectionTitleRowMolecule | 제목+우측 액션(지우기). 2_molecules/search. Phase 3 |
+| 최근 검색 칩 분자 | recent search chip molecule | - | RecentSearchChipMolecule | AssistChip 테두리+surface, 추천어와 문토형 통일. X 제거. 2_molecules/search. Phase 5 |
+| 최근 검색 가로 행 분자 | recent search horizontal row molecule | - | RecentSearchHorizontalRowMolecule | LazyRow. 2_molecules/search. Phase 3 |
+| 추천 검색어 플로 분자 | search suggestion flow molecule | - | SearchSuggestionFlowMolecule | FlowRow+FilterChip(selected=false) 테두리형 태그. 2_molecules/search. Phase 3 |
+| 랜딩 검색 필드 분자 | gathering landing search field molecule | - | GatheringLandingSearchFieldMolecule | GatheringSearchBarDefaults+SearchBarMolecule+TextButtonMedium(본문용). TopAppBar 인라인은 GatheringSearchTopBarMolecule. 2_molecules/search. Phase 3 |
+| 모임 검색 상단 바 분자 | gathering search top bar molecule | - | GatheringSearchTopBarMolecule | 캡슐 SearchBar(a11y_search)+선택 TextButtonMedium. TopAppBar title 전용. 뒤로는 템플릿 navigationIcon. 2_molecules/search. 문토 Phase 1·5·6 |
+| 모임 검색 캡슐 필드 토큰 | gathering search bar defaults | - | GatheringSearchBarDefaults | GATHERING_SEARCH용 SearchBarMolecule shape·compact·surface·a11y 단일 소스. 2_molecules/search. do-not-repeat §6.11a |
+| 모임 검색 추천어 배열 | gathering search suggestion terms | gathering_search_suggestion_terms | string-array | values/arrays.xml, values-ko/arrays.xml. SearchSuggestionFlowMolecule 입력. Phase 3 |
+| 가로 스크롤 섹션 | horizontal gathering section | - | HorizontalCardListOrganism, HorizontalCardListSectionScaffold | 홈 탭 추천/인기 등 `LazyRow` 섹션. 제목·부제·더보기(+아이콘)·`CardItemImageTopMolecule` 카드. `FeaturedGatheringSectionOrganism` / `PopularGatheringSectionOrganism`에서 위임. `MemberHomeTemplate`·`Member1HomePage`에서 조립. Phase 8 |
+| 가로 페이지 슬라이드 모임 섹션 | horizontal gathering paged section | - | (레거시 명칭) | 과거 계획/문서용 이름. **현행 코드**는 `HorizontalCardListOrganism` 기반 가로 스크롤(위 행). 별도 `HorizontalGatheringPagedSection.kt` 없음. |
+| 홈 히어로 슬롯 모임 | home hero gathering slots | - | HeroGatheringSlotsOrganism, HorizontalSlotsScaffold | 멤버 홈 최상단. 슬롯마다 카드 세로 3장, 가로 스크롤로 슬롯 전환. `MemberHomeTemplate`·`Member1HomePage` 경로. |
+| 홈 히어로 슬롯 디버그 픽스처 | home hero slots debug fixtures | - | DebugHeroGatheringSlotsFixtures | `DebugUiOptions.showDummyData`·빈 목록일 때 히어로 미리보기용 `GatheringDto` 샘플. `data/dto/gathering`. 사용자 릴리즈 노출 없음·l10n 제외. |
+| 모임 카드 플레이스홀더 | gathering card placeholder | - | R.drawable.gathering_placeholder_dummy | coverImageUrl 없을 때 GatheringCard에 표시하는 더미 이미지. res/drawable/gathering_placeholder_dummy.xml. do-not-repeat §7. |
+| 수정 요청 | edit request | - | EditRequestDto, EditRequestStatus, EditRequestRepository | 호스트가 모임 정보 변경 요청, 관리자 승인 필요. auth_api get_edit_request_status, create_edit_request, cancel_edit_request |
+| 수정 요청 취소 | cancel edit request | - | cancelEditRequest, CancelEditRequestRequest | PENDING 상태의 수정 요청을 호스트가 취소. auth_api cancel_edit_request |
+| 피드 댓글 | feed comment | feed_comments, comment_id | CommentDto, commentList | 라운지 피드 댓글. feed_api, LoungeFeedScreen FeedCommentsSection |
+| 피드 댓글 수(표시) | feed comment count (display) | comment_count | commentCount, effectiveCommentCountForDisplay | API 메타와 로드된 댓글 트리 중 max. 카드·댓글 시트 제목 단일 정책. FeedDto |
+| 탭 플레이스홀더 | tab placeholder | common_tab_placeholder | PlaceholderTabContentOrganism | 미구현 탭 "준비 중" 메시지. HostHomeScreen, MemberHomeScreen, AdminDashboardScreen |
+| 준비 중 버튼 피드백 | placeholder button feedback | common_tab_placeholder | scope.launch { snackbarHostState.showSnackbar(...) } | 미구현 버튼 클릭 시 Snackbar "준비 중". ManageMyGatheringScreen 상품·사진·프로모션. do-not-repeat §6.2b |
+| 스켈레톤 카드 | skeleton card | - | SkeletonCardOrganism, skeletonLineHeight | 로딩 시 카드 형태 플레이스홀더. AppSizes.skeletonLineHeight |
+| 신고 | report | report_id, target_type, target_id | ReportRepository, createReport, reportFeed | 피드·메시지 등 신고. report_api create_report, list_reports |
+| 피드 신고 | feed report | - | reportFeed, feed_report_confirm | 라운지 피드 메뉴 신고 버튼 → 확인 다이얼로그 → create_report(feed) |
+| 크래시 리포팅 | crash reporting | - | CrashReportHandler, ReportCrashRequest | UncaughtExceptionHandler, CoroutineExceptionHandler, crash_api 전송 |
+| 테이블 달력 | table calendar | - | TableCalendarOrganism | 모임 만들기·모임 상세 일정 등 날짜 선택. `3_organisms/common` 단일 소스. Phase 7-5 |
+| 멤버 홈 ViewModel | member home view model | - | MemberHomeViewModel | 멤버 홈 오프라인 배너용 isOnline 노출. controllers/member/home |
+| 이미지 압축 | image compress | - | ImageCompressUtils, compressForUpload | 업로드 전 리사이즈·JPEG 압축. v11 flutter_image_compress 대체. utils/ |
+| 리치 텍스트 | rich text | - | RichTextInput, RichTextDisplay, RichTextUtils | 볼드/이탤릭. HTML(<b>, <i>) 저장, AnnotatedString 표시. v11 flutter_quill 대체. RichTextDisplay: 2_molecules/displays. utils/ |
+| 금지어 | forbidden words | - | ForbiddenWords, containsForbiddenWord | 닉네임·게시글 등에서 사용 불가 단어. utils/ForbiddenWords.kt |
+| 모임 카테고리 옵션 | gathering category options | - | GatheringCategoryOptions, filter_category_* | 모임 만들기·검색 필터. tour, experience, other. config/GatheringCategoryOptions.kt |
+| 모임 목적 옵션 | purpose options | - | PurposeOptions | 모임 목적 상위·하위 카테고리. v11 interest_lists 이식. domain/options/PurposeOptions.kt |
+| Admin 에러 코드 | admin error codes | - | AdminErrorCodes, AdminErrorHelper | session_required, load_failed, temporary_error. config/, helpers/ |
+| 관리자 게이트 접근 거부 안내 | admin access denied message | admin_access_denied | R.string.admin_access_denied | 비관리자가 대시보드 게이트 진입 시 Snackbar. `AdminDashboardGateScreen`. values/values-ko |
+| 관리자 Repository (domain) | admin repository (domain) | - | AdminRepository(interface), AdminRepositoryImpl, AdminDtoMappers | domain/admin 인터페이스, app에서 구현·DTO→도메인 매핑. kotlin.Result 반환. do-not-repeat §7. 20260312-module-split-phase6 |
+| 슈퍼어드민 로컬 시드 DB 테이블 | super admin seed tables | super_referral_rank, super_reengagement_rank, super_banner_conversion, referral_rewards, super_suspicious_trades, platform_kpi_snapshots, gathering_categories, super_notices, super_user_logs, super_issued_coupons, force_update_config | - | DDL 묶음 `sql/seeds/seed_super_admin.sql`(force_update_config 제외). `super_referral_rank.rank_pos`: 기간 내 1-based 순위(062 시드·`sql/071_super_referral_reengagement_cleanup_rank_pos.sql` 백필). `force_update_config`+일부 시스템 INSERT는 `sql/057_seed_super_system_viewmodel_dummy.sql`. users·KPI·의심거래·gathering_categories DML은 `sql/058_seed_super_admin_phase3_home_core.sql`(users id 20001~20007 ↔ ViewModel userId 1~7). referral_rewards 행은 `sql/059_seed_super3_referral_rewards.sql`. 앱 더미 단일 소스 `controllers/admin/SuperAdminViewModel.kt`. |
+| Admin DI 모듈 | Admin module | - | AdminModule | di/AdminModule.kt. @Binds AdminRepository ← AdminRepositoryImpl. 20260312-module-split-phase6 |
+| 쿠폰 검증 결과 | coupon validation result | - | CouponValidationResultDto | validate_coupon API 응답. data/dto/booking/ |
+| 모임 옵션 데이터 | option data | - | OptionDataDto | 추가 요금 등 모임 옵션. name, price, isSelected, isRepresentative. data/dto/gathering/ |
+| 앱 색상 | app colors | - | AppColors | Theme 정의 전용. UI는 MaterialTheme·Theme 확장 경유. ui/theme/AppColors.kt |
+| 화면 스케일 | screen scale | - | ScreenScaleProvider, DesignSize, scaleW, scaleH, ScreenScaleDebugBanner | ui/theme/ScreenScale.kt. v11 flutter_screenutil 대응. Phase 7-4 |
+| 채팅방 색상 | chat room colors | - | ChatRoomColors, LocalChatRoomColors, chatBubbleReceivedOutline | 채팅 배경·말풍선·입력창·수신 말풍선 테두리. Theme 확장. ui/theme/ChatRoomColors.kt, AppColors 채팅 토큰 |
+| 프로필 편집 색상 | profile edit colors | - | ProfileEditColors, LocalProfileEditColors | 성별 여성 버튼 분홍 등. Theme 확장. ui/theme/ProfileEditColors.kt |
+| 앱 의미 색 | app semantic colors | - | AppSemanticColors, LocalAppSemanticColors | 투명 등 의미 색. Theme 확장. ui/theme/AppSemanticColors.kt |
+| 앱 투명도 | app alpha | - | AppAlpha | surfaceOverlay, textTertiary 등. ui/theme/AppAlpha.kt |
+| 앱 폰트 크기 | app font sizes | - | AppFontSizes | xs~xxxl, letterSpacingReferralCode. ui/theme/AppFontSizes.kt |
+| 앱 여백 | app spacing | - | AppSpacing, listItemGap, myPageProfileImageTop | xs~xxl, contentTopTight, listItemGap(4.dp, v11 halfDivisor 대응), myPageProfileImageTop(10.dp). ui/theme/AppSpacing.kt. do-not-repeat §3.1 |
+| 리스트 카드 모서리 | list card border radius | - | listCardBorderRadius, AppSizes.listCardBorderRadius | 10.dp. 마이페이지 리스트 카드, 문의 티켓 메시지 카드, 홈 가로 스크롤 모임 카드(compact) 등. ui/theme/AppSizes.kt. do-not-repeat §3.1 |
+| 가로 모임 카드 텍스트 블록 높이 | horizontal gathering card text block height | - | horizontalGatheringCardTextBlockHeight, AppSizes.horizontalGatheringCardTextBlockHeight | CardItemImageTop 하단 고정 높이. 이미지 높이와 합쳐 카드 전체 높이 일정. ui/theme/AppSizes.kt |
+| 홈 큰 모임 카드 텍스트 블록 높이 | home big gathering card text block height | - | homeBigGatheringCardTextBlockHeight, AppSizes.homeBigGatheringCardTextBlockHeight | BigCardItemImageTop 하단 고정 높이. 배너 높이 이미지와 합쳐 신규 모임 등 세로 큰 카드 높이 일정. ui/theme/AppSizes.kt |
+| 하단 네비게이션 바 최소 높이 | bottom nav bar min height | - | bottomNavBarMinHeight, AppSizes.bottomNavBarMinHeight | 72.dp. MemberHomeScreen, AdminBottomNavBar. 호스트 셸은 서랍 전환·하단 바 없음. ui/theme/AppSizes.kt |
+| 디자인 토큰 | design token | - | AppColors, AppSpacing, AppSizes, design_tokens.php | 색상·여백·크기 정의 단일 소스. 20260312-design-tokenization-phase2 |
+| 차원 없음 | dimension none | - | AppSizes.dimensionNone | 0.dp, widthIn(min=0) 등 "제한 없음". Phase 3 추가 |
+| 이메일 템플릿 토큰 | email template tokens | - | design_tokens.php | email_helpers.php, receipt_pdf_helper.php 색상·여백. htdocs/config/constants/ |
+| 아이콘 전환 애니메이션 | animated icon atom | - | AnimatedIconAtom | isExpanded에 따라 startIcon↔endIcon. Phase 7-3. ui/views/1_atoms/ |
+| 달력 월 포맷 | format year month | - | DateUtils.formatYearMonth | YearMonth → "yyyy년 M월" 또는 "MMMM yyyy". utils/DateUtils.kt |
+| 채팅 메시지 시간 | format message time | - | DateUtils.formatMessageTime | 채팅방 메시지 시간. 오늘 HH:mm, 어제 HH:mm, 그 외 M/d HH:mm. utils/DateUtils.kt |
+| 채팅 날짜 구분선 | format date separator label | - | DateUtils.formatDateSeparatorLabel | WA 스타일. "오늘", "어제", "yyyy년 M월 d일". utils/DateUtils.kt |
+| 메시지 표시 상태 | message display status | - | MessageDisplayStatus, getMessageDisplayStatus | sent/delivered/read 아이콘. domain/enums/, utils/MessageStatusUtils.kt |
+| 채팅 슬롯 | chat slot | - | ChatSlot | 날짜 구분선+메시지 혼합. ChatRoomScreen 내부 sealed class |
+| 메시지 길게 누름 메뉴 상태 | message menu state | - | MessageMenuState | 채팅 메시지 컨텍스트 메뉴 UI 상태. 2_molecules/chats (ChatRoomModalsMolecule.kt) |
+| 채팅방 모달 유기체 | chat room modals organism | - | ChatRoomModalsOrganism | 설정·초대 링크 시트·나가기 확인 등. 3_organisms/member_4_chats |
+| 채팅 초대 UI 정책 | chat invite UI policy | - | ChatRoomInviteUiPolicy | 설정 시트 `allow_invite_without_approval` 스위치: 1:1+방장만 표시. 그룹은 PHP에서 필드가 1:1 초대 플로 전용. 초대 링크 토큰 생성은 참여자 전원 허용(`create_invite_link`). `utils/filter/ChatRoomInviteUiPolicy.kt`. Phase G11 |
+| 채팅 이름 없음 | chat name unknown | - | chat_name_unknown | chatName null 시 플레이스홀더. strings.xml |
+| 채팅 이름 플레이스홀더 | chat name placeholder | - | chat_name_placeholder | chatName 빈 문자열 시 표시. strings.xml |
+| 채팅 메시지 수정 메뉴 | chat message edit menu | - | chat_edit | 내 텍스트 메시지 길게 누름 → 수정. strings.xml |
+| 채팅 메시지 수정 모드 배너 | chat edit mode banner | - | chat_edit_mode | 입력창 상단 편집 모드 제목(카카오톡형). strings.xml |
+| 채팅 수정됨 표시 | chat edited label | - | chat_edited | 말풍선 (수정됨). strings.xml |
+| 채팅 메시지 수정 실패 | chat update failed Snackbar | - | chat_update_failed | update_message API 실패 시. strings.xml |
+| 채팅 목록 길게 누름 메뉴 분자 | chat list context menu molecule | chat_context_* | ChatListContextMenuDialogMolecule, ChatListContextMenuAction | 카카오톡형 스크림+중앙 패널. 2_molecules/modals. strings + AppSizes.chatListContextMenuCornerRadius |
+| 멤버 채팅 탭 화면 상태 | chats tab screen state | - | ChatsTabScreenState | `ui/views/state/member_4_chats`. `ChatsTabTemplate` 입력. `ChatListViewModel.ChatListUiState`→매핑은 `Member4ChatsPage`만 |
+| 그룹 채팅 생성 화면 상태 | create group chat screen state | - | CreateGroupChatScreenState, CreateGroupChatMemberPickItem | `ui/views/state/member_4_chats`. `CreateGroupChatMemberPickerOrganism` 입력. `CreateGroupChatViewModel.UiState`→매핑은 `CreateGroupChatScreen`만. Phase G8 |
+| 그룹 채팅 멤버 검색 API | search users for chat | - | `search_users_for_chat`, `ACTION_SEARCH_USERS_FOR_CHAT`, SearchUsersForChatRequest, SearchUsersForChatResponse, UserSearchRowDto, ApiActions.SEARCH_USERS_FOR_CHAT, ProfileRepository.searchUsersForChat | auth_api.php. 세션 필수; 빈 query는 최근 활성 사용자, 있으면 닉네임 LIKE. limit 1~50, 기본 `DomainLimits.CHAT_MEMBER_SEARCH_LIMIT`. `CreateGroupChatViewModel` 연동. Phase G9 |
+| 채팅방 화면 상태 | chat room screen state | - | ChatRoomScreenState | `ui/views/state/member_4_chats`. `ChatRoomTemplate`·모달 표시용. `replyingTo*`·`editingMessageId`·`editingContent`(메시지 수정 모드). `ChatRoomViewModel.ChatRoomUiState`→매핑은 `ChatRoomScreen`만 |
+| 채팅 API 요청 DTO | message API request DTOs | - | GetChatListRequest, GetChatRequest, GetMessagesRequest, SendMessageRequest(+중첩 SendMessageAttachmentRequest), SendMessageAttachmentRequest, UpdateMessageRequest, MarkAsReadRequest, DeleteMessageRequest, UpdateChatSettingsRequest, JoinByInviteLinkRequest, CreateChatRequest, CreateGroupChatRequest (`create_chat` 그룹 분기: participant_ids, name?, include_system_message?), DeleteChatRequest, CreateInviteLinkRequest, AddMessageReactionRequest | message_api.php 요청 body. data/dto/chat/. Retrofit `@Body` 전용 Request DTO만(do-not-repeat §5.2). `SendMessageAttachmentRequest`는 다중 이미지·파일 첨부 배열 요소(B1·A4 미디어 확장 합의와 동일 스키마). Map 와일드카드 금지. 20260314-message-api-request-dto-phase-record.md. Phase H2: 첨부 관련 타입 glossary 등록 완료. Phase R7: AddMessageReactionRequest (`add_message_reaction`). Phase G5: CreateGroupChatRequest |
+| Redis 실시간 이벤트 봉투 | Redis realtime event envelope | - | schema_version, type, chat_id, payload | PHP `RedisPublisher` PUBLISH JSON v1, snake_case. 채널 `happy_v12:chat:{chat_id}`. docs/dev-records/kotlin/20260503_redis-realtime-event-schema-v1.md |
+| 발신 기준 미읽음 델타 | sender side unread delta | sender_side_unread_delta | `SenderSideUnreadEntry`, `RealtimeEvent.ReadReceipt.senderSideUnreadDelta` | `read_receipt` JSON 선택 배열: `{ message_id, unread_count }`. 도메인: `domain/chat/SenderSideUnreadEntry.kt` |
+| 프로필 선택 이유 | selected reasons | selected_reasons | selectedReasons | UserProfileDto. save_user_field 필드명 |
+| 프로필 선택 시간 | selected times | selected_times | selectedTimes | UserProfileDto. save_user_field 필드명 |
+| 검색 키워드 | search keywords | search_keywords | searchKeywords | UserProfileDto. save_user_field 필드명 |
+| 표시명 타입 | display name type | display_name_type | displayNameType | nickname/real_name. UserProfileDto |
+| 단순 액션 결과 | simple action result | - | SimpleActionResult | Auth withdraw/restore/changeEmail/changePhone 결과. success, message. domain/model/ |
+| 모임 리스트 UI State | gathering list ui state | - | GatheringListUiState | GatheringRecommended, Wishlist, VerticalCardMore 공통. gatherings, isLoading, error. ui/views/state/member_1_home/ |
+| 네비 탭 아이템 | nav tab item | - | NavTabItem | 하단 네비 탭 (labelResId, icon). AdminBottomNavBar 등. 호스트 주 메뉴는 서랍 `NavigationDrawerItem`. ui/views/3_organisms/common/ |
+| 멤버 네비 목적지 빌더 | member nav destinations | - | MemberNavDestinations | 멤버 그래프용 `navigate` 경로 문자열 생성. `Route`+경로 조합 단일 소스. `navigation/MemberNavDestinations.kt`. Auth/Chat은 각각 AuthDestinations·ChatDestinations. |
+| 호스트 네비 목적지 빌더 | host nav destinations | - | HostNavDestinations | 호스트 그래프용 `navigate` 경로 문자열 생성. `navigation/HostNavDestinations.kt`. |
+| 관리자 네비 목적지 빌더 | admin nav destinations | - | AdminNavDestinations | 관리자 대시보드 등 `navigate` 경로 문자열 생성. `navigation/AdminNavDestinations.kt`. |
+
+---
+
+## 2. API·인증
+
+| 용어 | Kotlin | API 키 | 비고 |
+|------|--------|--------|------|
+| 세션 토큰 | sessionToken | session_token, X-Session-Token, Authorization: Bearer | 클라이언트는 Bearer 사용(Phase 4). 서버 저장은 **user_sessions** 단일(Phase 6에서 users 레거시 session_token/session_expires_at 제거). |
+| 인증 헤더 표준 (권장) | Authorization: Bearer | Authorization: Bearer + 토큰 | 20260312-api-stability-phase4. Android AuthInterceptor Bearer 사용. 백엔드 구규격 병행 허용. |
+| 세션 토큰 검증 | requireSessionToken | - | AuthRepository 내부. sessionToken null/empty 시 IOException. 20260312-refactoring-phase3 |
+| 사용자 ID | userId | user_id | |
+| 모임 ID | gatheringId | gathering_id | |
+| 예약 ID | bookingId | booking_id | |
+| 채팅 ID | chatId | chat_id | |
+| 메시지 ID | messageId | message_id | |
+| 답장 대상 메시지 ID | replyToMessageId | reply_to_message_id | send_message, replyTo |
+| 결제 ID | paymentId | payment_id | |
+| 문의 티켓 ID | ticketId | ticket_id | dispute_api |
+| 티켓 토큰 | ticketToken | ticket_token | QR·입장 확인 검증 |
+| 호스트 이용약관 URL | host terms URL | hostTermsUrl | ApiConfig, BuildConfig | 빈 문자열이면 "준비 중" 안내 |
+| 배너 ID | bannerId | banner_id | admin_api 배너 CRUD |
+| OneSignal App ID | oneSignalAppId | ONE_SIGNAL_APP_ID | BuildConfig |
+| Google Maps API 키 | Google Maps API key | GOOGLE_MAPS_API_KEY | BuildConfig, gradle.properties |
+| API Base URL (release) | API_BASE_URL | API_BASE_URL | BuildConfig, gradle.properties | release 빌드 시 프로덕션 URL. gradle.properties로 오버라이드 가능. |
+| OTP | OTP | otp | otp | SMS 인증번호, send_otp, verify_phone_number |
+| 추가 정보 업데이트 | update additional info | - | update_additional_info | auth_api, 구글 신규 사용자 전화번호 저장 |
+| 이메일 변경 인증 링크 | send email verification link (change) | send_email_verification_link | sendEmailVerificationLinkForChange | auth_api. 인증 필수(Bearer 권장). 429 CooldownException |
+| 이메일 로그인 링크 | send email login link | send_email_login_link | sendEmailLoginLink | auth_api. 인증 불필요. 429 CooldownException |
+| 미완료 가입 삭제 | delete incomplete signup | delete_incomplete_signup | deleteIncompleteSignup | auth_api. 인증 불필요 |
+| 슈퍼 분석 추천인 순위 조회 | list super referral ranks | list_super_referral_ranks | ApiActions.LIST_SUPER_REFERRAL_RANKS | admin_api. period·선택 data_date |
+| 슈퍼 분석 재참여율 순위 조회 | list super reengagement ranks | list_super_reengagement_ranks | ApiActions.LIST_SUPER_REENGAGEMENT_RANKS | admin_api. period·선택 data_date |
+| 슈퍼 분석 배너 전환 조회 | list super banner conversions | list_super_banner_conversions | ApiActions.LIST_SUPER_BANNER_CONVERSIONS | admin_api. banner_period today\|7d\|30d\|all |
+| 슈퍼 분석 목록 응답 DTO | super analysis list responses | - | `SuperAnalysisListResponses.kt` | Gson. domain 스냅샷은 `AdminSuperAnalysis.kt` |
+| 슈퍼 조회(보상·시스템·로그) API | super admin read APIs | list_super_referral_rewards 등 | ApiActions.LIST_SUPER_* / GET_SUPER_FORCE_UPDATE_CONFIG | admin_handlers/super_read_handlers.php |
+| 슈퍼 레퍼럴 보상 목록 | list super referral rewards | list_super_referral_rewards | ApiActions.LIST_SUPER_REFERRAL_REWARDS | admin_api. limit·offset |
+| 슈퍼 의심 거래 목록 | list super suspicious trades | list_super_suspicious_trades | ApiActions.LIST_SUPER_SUSPICIOUS_TRADES | admin_api. status ALL\|PENDING\|… |
+| 슈퍼 플랫폼 KPI 스냅샷 | list super platform kpi snapshots | list_super_platform_kpi_snapshots | ApiActions.LIST_SUPER_PLATFORM_KPI_SNAPSHOTS | admin_api. period all\|today\|7d\|30d |
+| 슈퍼 모임 카테고리 목록 | list super gathering categories | list_super_gathering_categories | ApiActions.LIST_SUPER_GATHERING_CATEGORIES | admin_api |
+| 슈퍼 공지 목록 | list super notices | list_super_notices | ApiActions.LIST_SUPER_NOTICES | admin_api |
+| 슈퍼 사용자 로그 목록 | list super user logs | list_super_user_logs | ApiActions.LIST_SUPER_USER_LOGS | admin_api. action_type 선택 |
+| 슈퍼 발급 쿠폰 목록 | list super issued coupons | list_super_issued_coupons | ApiActions.LIST_SUPER_ISSUED_COUPONS | admin_api |
+| 슈퍼 강제 업데이트 설정 조회 | get super force update config | get_super_force_update_config | ApiActions.GET_SUPER_FORCE_UPDATE_CONFIG | admin_api. config null 가능 |
+| 슈퍼 조회 응답 DTO(보상·시스템) | super read list responses | - | `AdminSuperReadResponses.kt` | Gson. domain 행은 `AdminSuperReadRows.kt` |
+
+---
+
+## 3. 상태값 (Enum / 상수)
+
+| 용어 | 허용 값 | 비고 |
+|------|---------|------|
+| 사용자 상태 | active, deactivated, dormant, suspended, withdrawn | users.status |
+| 예약 상태 | confirmed, held, expired, cancelled, no_show | gathering_bookings.status |
+| 결제 상태 | success, pending, failed | payment.status |
+| 모임 종류 | regular, event | gathering_type |
+| 링크 타입 | none, url, gathering | banner link_type |
+| 메시지 삭제 타입 | for_me, for_everyone | delete_type | delete_message API |
+| 문의 티켓 상태 | open, in_progress, resolved, closed | status | dispute tickets |
+| 문의 유형 | inquiry, refund_dispute, no_show_dispute | type | dispute create_ticket |
+| 호스트 신청 상태 | host application status | HostApplicationStatus | pending, verified, rejected | host_profile.status |
+| 호스트 홈 탭 화면 상태 | host home tab screen state | - | HostHomeTabScreenState | `HostHomeGatheringRowUi` 목록·로딩·에러. `HostGatheringViewModel`→`HostHomeTab`에서만 매핑. `ui/views/state/host_1_home` |
+| 호스트 홈 목록 행 UI | host home gathering row ui | - | HostHomeGatheringRowUi | `GatheringDto`+다음 회차 요약(optional); null이면 `host_home_next_session_placeholder` |
+| 호스트 모임 상세 | host gathering detail | HOST_GATHERING_DETAIL | HostGatheringDetailScreen | 호스트 전용 모임 미리보기·편집 진입. 멤버 `GATHERING_DETAIL`과 구분. `HostNavDestinations.hostGatheringDetail`, `5_pages/host_1_home/routes` |
+| 호스트 홈 Single→상세 진입 | host home single scope to detail navigation | - | `HostHomeScreen`, `navigateToResolvedHostGatheringDetailOrReconcile`, `navigateHostHomeTabToSingleGatheringDetailIfNeeded`, Phase2 `LaunchedEffect` | 명시: 서랍 **호스트 홈** 탭, 또는 **내 모임** `Single` 선택(현재 주 메뉴 HOME). 자동: 홈 탭+Single+Nav 최상단이 셸(`Route.HOST_HOME`). 목록 불일치 시 reconcile+`host_home_gathering_not_in_list_scope_reconciled_snackbar`. 단일 문서 `docs/dev-records/kotlin/20260413-host-home-single-to-detail-navigation-phase0.md`. |
+| 호스트 모임 운영 허브 | host gathering hub | HOST_GATHERING_HUB | HostGatheringHubScreen, HostGatheringHubSectionOrganism, HostGatheringHubPageChrome, HostGatheringHubScreenState | 예약·참가자·채팅·일정·리뷰 탭; M7는 플레이스홀더 본문. 본문 레이아웃은 `HostGatheringHubSectionOrganism`(단독·`ManageMyGatheringTemplate` Ready 동일). DEBUG·채팅 관리 행·탭 본문 공통은 `HostGatheringHubPageChrome.kt`. `HostNavDestinations.hostGatheringHub`, `3_organisms`·`4_templates/host_2_manage`·`5_pages/host_2_manage`, `ui/views/state/host_2_manage` |
+| 호스트 채팅 | host chat | HostGatheringHubChatTabContent, ChatMyGatheringScreen, `CHAT_MY_GATHERING` | `host_2_manage` (`host_chats/`, `routes/ChatMyGatheringScreen`) |
+| 모임별 채팅 | chat by gathering | ChatMyGatheringScreen | 모임 운영 허브 채팅 탭 「채팅 관리」등에서 진입 |
+| 호스트 채팅 상태 | host chat status | 진행중, 완료, 보류 | UI 라벨·배지. HostChatStatusConfig (value→labelResId). do-not-repeat §6 |
+| 푸시 페이로드 type | push payload type | type | message_arrived, chat_invite, booking_confirmed 등 | PushNotificationHandler |
+| 수정 요청 상태 | edit request status | EditRequestStatus | pending, approved, rejected | gathering_edit_requests.status |
+| 메시지 표시 상태 | message display status | MessageDisplayStatus | SENT, DELIVERED, READ | 채팅 sent/delivered/read 아이콘. getMessageDisplayStatus |
+
+---
+
+## 4. 패키지·역할 용어
+
+| 한글 | 영문 | Kotlin 패키지 | 역할 | 비고 |
+|------|------|---------------|------|------|
+| 컨트롤러 | controller | controllers/ | 상태 관리, Repository 호출, UI 이벤트 처리 (ViewModel) | begin, member, host, admin, common |
+| 핸들러 | handler | handlers/ | 푸시 클릭, 딥링크 수신 등 이벤트 처리 | PushNotificationHandler, PendingDeepLinkHolder |
+| 헬퍼 | helper | helpers/ | 지문, 구글 로그인, 에러 표시, 권한·이미지 선택·외부 URL 열기 등 특정 기능 래퍼 | BiometricHelper, ErrorDisplayHelper, AdminErrorHelper, GoogleSignInHelper, PermissionHelper, ImageFromGalleryHelper, MultiImageFromGalleryHelper, PickImageCropHelper, ExternalUrlOpenHelper |
+| 유틸 | util | utils/ | 날짜, 금액, 검증 등 순수 함수 | DateUtils, Validators, ForbiddenWords, CountryCodeUtil, GeocodingUtils, QrCodeUtils, GatheringListFilterUtils |
+| 모임 목록 필터 유틸 | gathering list filter utils | - | GatheringListFilterUtils.filterExcludedGatherings | 홈·더보기 공통 제목 기준 제외. utils/GatheringListFilterUtils.kt |
+| 멤버 홈 모임 표시 유틸 | member home gathering display utils | - | MemberHomeGatheringDisplayUtils | 홈 가로 featured·popular(DEBUG 동일 fallback 보충, 최대 9)·세로 추천·신규·더보기 목록 단일 소스. controllers/member/home/MemberHomeGatheringDisplayUtils.kt |
+| 앱 로거 | app logger | AppLogger | d/i/w/e. 로깅 표준. 직접 Log.d/Log.e 호출 금지. utils/AppLogger.kt. 20260312-logging-error-handling-phase0-standard | |
+| API 응답 처리 | API response utils | ApiResponseUtils | translateThrowable, safeApiCall. Repository 응답·예외 매핑 공통화. utils/ | |
+| DTO fallback | DTO fallback utils | DtoFallbackUtils | firstNonNull, firstNonBlank, intOr, doubleOr, stringOrEmpty, intOrNonZero, doubleOrNonZero, listOrEmpty. effective* getter 통일. utils/ | |
+| ViewModel 에러 Snackbar | to display message | toDisplayMessage | ErrorDisplayHelper. 예외→Snackbar용 문자열. ViewModel onFailure 시 _error.value 할당. helpers/ | |
+| 쿨다운 에러 처리 | handle cooldown or error | handleCooldownOrError | ErrorDisplayHelper. CooldownException 시 (메시지, retryAfterSeconds) 반환. OTP·인증 링크 429 처리. helpers/ | |
+| 쿨다운 예외 | cooldown exception | CooldownException | data/repository/CooldownException.kt. AuthRepository에서 사용. 429 응답 시 retryAfterSeconds 포함. sendOtp, verifyPhoneNumber, sendEmailVerificationLink 등 | |
+| 날짜 표시 fallback | format date or dash | formatDateTimeOrDash | DateUtils. null이면 "-" 반환. utils/ | |
+| 금액 입력 파싱 | amount input parse | parseNullableAmount, parseNonNegativeAmount | AmountFormatUtils. 문자열→Double, 음수 제외. utils/ | |
+| 진동 피드백 | haptic feedback | utils/ | 스캔 성공 등 짧은 진동 | HapticUtils.vibrateSuccess(context) |
+| 설정 | config | config/ | API 설정, Route, MyPageTabItems, 에러 코드, 옵션 | ApiConfig, Route, AdminErrorCodes, GatheringCategoryOptions |
+| API action 상수 | API actions | ApiActions | API action 문자열 (get_gathering, list_feeds 등). config/ApiActions.kt. do-not-repeat §6.10 | |
+| 도메인 상태 상수 | domain status | DomainStatus | User/Booking/Payment/Message 등 상태값. config/DomainStatus.kt | |
+| 도메인 limit 상수 | domain limits | DomainLimits | limit·timeout·delay·length. config/DomainLimits.kt. ApiPaging, ApiTimeouts와 중복 금지 | |
+| 채팅 상수 | chat constants | ChatConstants | PushType, DeepLinkHost, ChatRole 등. config/ChatConstants.kt | |
+| API 페이징 | API paging | ApiPaging | pageSizeGathering, pageSizeFeed, pageSizeChat, cacheTtlListSeconds. config/ApiPaging.kt | |
+| API 타임아웃 | API timeouts | ApiTimeouts | HTTP 요청 타임아웃. config/ApiTimeouts.kt. NetworkModule에서 사용. 관련: `OKHTTP_MAX_REQUESTS_PER_HOST`, `OKHTTP_TRANSPORT_MAX_ATTEMPTS`, `OKHTTP_TRANSPORT_BACKOFF_BASE_MS`, `OKHTTP_TRANSPORT_BACKOFF_MAX_MS` (RetryInterceptor) | |
+| 호스트 채팅 상태 설정 | host chat status config | HostChatStatusConfig | 필터·상태 (value, labelResId). config/HostChatStatusConfig.kt. do-not-repeat §6 | |
+| 도메인 열거형 | domain enum | domain/enums/ | Result, *Status 등 | Result, SettlementStatus |
+| Wrapper 계약 | wrapper contracts | domain/contracts/ | 외부 라이브러리 추상화 인터페이스 | ApiClient, JsonCodec, HttpDownloadClient, MultipartUploadClient, HttpInterceptor, HttpPostClient, PushClient, PushNotificationContract, MapClient, QrClient, ImageCropClient. 20260312-external-library-wrapping-phase1 |
+| Wrapper 에러 | wrapper error | WrapperError | 네트워크/파싱/권한/SDK 실패 분류 | domain/contracts/WrapperError.kt |
+| API 클라이언트 | API client | ApiClient | Retrofit create() 등 API 인스턴스 생성 래핑 | domain/contracts/ |
+| HTTP 다운로드 클라이언트 | HTTP download client | HttpDownloadClient | URL GET 다운로드. OkHttp 직접 참조 제거용 | domain/contracts/ |
+| 멀티파트 업로드 클라이언트 | multipart upload client | MultipartUploadClient | storage_api upload_file. MultipartBody/RequestBody 직접 참조 제거용 | domain/contracts/ |
+| HTTP 인터셉터 | HTTP interceptor | HttpInterceptor, HttpInterceptorChain, HttpRequest, HttpResponse | 요청/응답 가로채기(인증 헤더, 토큰 갱신). OkHttp Interceptor 직접 참조 제거용. Phase 6 | domain/contracts/HttpInterceptor.kt |
+| HTTP POST 클라이언트 | HTTP post client | HttpPostClient | JSON POST 블로킹 전송. 크래시 리포팅 등. OkHttp 직접 참조 제거용. Phase 6 | domain/contracts/HttpPostClient.kt |
+| JSON 코덱 | JSON codec | JsonCodec | toJson, fromJson. Gson 등 직렬화 래핑 | domain/contracts/ |
+| 푸시 클라이언트 | push client | PushClient | OneSignal 등 푸시 SDK 저수준(init·권한·getPushId). SDK 경계 래퍼. **PushClient SDK 이관은 후속 스프린트. 현재 Adapter가 OneSignal 직접 호출(의도).** 시그니처 변경/삭제 금지 | domain/contracts/PushClient.kt |
+| 푸시 알림 계약 | push notification contract | PushNotificationContract | 앱 오케스트레이션(initialize·sendTokenToServer·handleClick). [PushClient]와 역할 분리. 구현: `data/adapters/PushNotificationAdapter`. Auth·foreground는 PushTokenSender 직호출 유지(의도). sendTokenToServer는 파사드/후속 이관용 | domain/contracts/PushNotificationContract.kt |
+| 지도 클라이언트 | map client | MapClient | Places, Geocoder, FusedLocation. GoogleSignIn과 분리 | domain/contracts/ |
+| QR 클라이언트 | QR client | QrClient | ML Kit Barcode 등 QR 스캔 래핑 | domain/contracts/ |
+| 이미지 크롭 클라이언트 | image crop client | ImageCropClient | Canhub Cropper 등 크롭 SDK 래핑 | domain/contracts/ |
+| 지리 좌표 | geo point | GeoPoint | latitude, longitude. GMS LatLng 대체 | domain/model/GeoPoint.kt |
+| 스토리지 업로드 결과 | storage upload result | StorageUploadResult | downloadUrl, thumbnailUrl. MultipartUploadClient 반환 타입 | domain/model/StorageUploadResult.kt |
+| API 응답 본문 추상화 | API response body | ApiResponseBody, toApiResponseBody | Repository에서 retrofit2.Response 대신 사용. core/model/ApiResponseBody.kt, data/adapters에서 Response<T>.toApiResponseBody() 확장. 20260312-external-library-wrapping-phase6-closure | |
+| 아톰 | atom | ui/views/1_atoms/ | 최소 UI 단위 (버튼, 텍스트, 아이콘) | PrimaryButton, BodyText, IconAtom. 패키지 atoms |
+| 텍스트 필드 아톰 | text field atom | - | TextFieldAtom | shape, useSurfaceContainerBackground( surfaceContainerLow 배경 ). SearchBar가 동일 파라미터 전달. 랜딩 캡슐은 GatheringLandingSearchFieldMolecule. 1_atoms/textfields |
+| 분자 | molecule | ui/views/2_molecules/ | atoms 조합 (SearchBar, ProfileAvatar, EmptyStateView) | AppLoadingIndicator·EmptyStateView·ErrorRetryBlock: molecules.feedback. 패키지는 폴더와 동일(molecules.forms 등) |
+| 로딩 인디케이터 | loading indicator | AppLoadingIndicatorMolecule (호출부 `as AppLoadingIndicator` 가능) | `2_molecules/feedback/AppLoadingIndicatorMolecule.kt`. 전체 화면 기본(iconXlarge), 인라인·버튼 내부 iconMedium/iconSmall. pages/organisms에서 CircularProgressIndicator 직접 사용 금지. do-not-repeat §6.9 |
+| 유기체 | organism | ui/views/3_organisms/ | molecules 조합 (GatheringCard, HostSidebarSheetContentOrganism 등) | v11 스타일: admin_1_home, host_1_home, member_1_home, member_2_discovery, member_3_lounge, member_4_chats, member_5_mypage, common |
+| 설정 스위치 행 분자 | switch row molecule | - | SwitchRowMolecule | 라벨+스위치. 2_molecules/lists |
+| 선택 가능 설정 행 분자 | selectable setting row molecule | - | SelectableSettingRowMolecule | ListItem+체크. 국가·언어 등. 2_molecules/lists |
+| 폼 인라인 에러 분자 | form inline error molecule | - | FormInlineErrorMolecule | 폼 상단 에러 문구. 2_molecules/forms |
+| 메뉴 항목 행 분자 | menu item row molecule | - | MenuItemRowMolecule | MyPageTabItem 라벨+탭. 2_molecules/lists |
+| 스크롤 탭 행(리소스) 분자 | scrollable resource tab row molecule | - | ScrollableResourceTabRowMolecule | ScrollableTabRow + 문자열 리소스 탭. 홈 추천/인기/신규, 라운지 피드/장소, 마이페이지 상단. 2_molecules/navigation |
+| 라운지 필터 탭 행 분자 | lounge filter tab row molecule | - | ScrollableChipFilterTabRowMolecule | 라운지 피드 필터 칩 스타일 ScrollableTabRow. 2_molecules/navigation |
+| 섹션 컨테이너 분자 | section container molecule | - | SectionContainerMolecule | Column 패딩·간격. 2_molecules/lists |
+| 빈 상태 문구 분자 | empty state molecule | - | EmptyStateMolecule | 가운데 정렬 단일 문구. 2_molecules/lists. 아이콘 등은 feedback/EmptyStateView |
+| 액션 버튼 행 분자 | action button row molecule | - | ActionButtonRowMolecule | TextButton 한 줄. labelResId + onClick. 2_molecules/lists |
+| 프로필 편집 사진 선택 유기체 | edit profile photo picker organism | - | MyPageEditProfilePhotoPickerOrganism | 프로필 이미지 탭 영역. 3_organisms/member_5_mypage |
+| 프로필 편집 성별 선택 유기체 | edit profile gender selector organism | - | MyPageEditProfileGenderSelectorOrganism | 성별 TextButton 행. 3_organisms/member_5_mypage |
+| 프로필 편집 공개 범위 유기체 | edit profile visibility organism | - | MyPageEditProfileVisibilityOrganism | 공개 범위 FilterChip. 3_organisms/member_5_mypage |
+| 로그인 기록 카드 유기체 | login history card organism | - | MyPageLoginHistoryCardOrganism | 로그인 기록 한 건 카드. 3_organisms/member_5_mypage |
+| 온보딩 공통 셸 | auth step scaffold | 3_organisms/scaffolds | AuthStepScaffold | `5_pages/begin` 인증·회원가입 단계 화면 레이아웃. TopAppBar 유무·스크롤·Snackbar·키보드 dismiss. FormTemplate은 다른 도메인용. |
+| 단계 이전·다음 버튼 | back next buttons scaffold | 3_organisms/scaffolds | BackNextButtonsScaffold (호출부 `as BackNextButtons` 가능) | 모임 만들기 등 다단계 폼 하단. |
+| 템플릿 | template | ui/views/4_templates/ | 레이아웃 골격 (Scaffold, Form) | v11 스타일 도메인별: `begin/shared/`·`begin/{welcome,google,email,common}/begin_*_N_*`(인증·온보딩), member_1_home/(ScaffoldTemplate), member_2_discovery/, member_3_lounge/, member_4_chats/, member_5_mypage/(MyPageTabTemplate, MyPageSettingsFormTemplate, MyPageTicketListTemplate, MyPageActionConfirmTemplate), common/(FormTemplate, ScaffoldWithBottomNavTemplate). 멤버 폴더 순서는 `structure-kotlin.mdc` Phase D |
+| 페이지 | page | ui/views/5_pages/ | 화면별 Screen (v11 스타일 도메인별 폴더) | `begin`(welcome/google/email/common), member_1_home~member_5_mypage, host_2_manage 등. WelcomeScreen, MemberHomeGate |
+| 뷰 상태 | views state | ui/views/state/ | 템플릿·유기체용 화면 상태·UI 계약 타입 | 패키지 ui.views.state.*. ViewModel UiState와 분리, **매핑은 Screen만**(강분리). 적용 예: Member1Home·GatheringDetail·BookingTicket·GatheringReviewWrite·VerticalCardMore·GatheringSearch 등; 확장은 PR·이슈 단위. common/, member_1_home~member_5_mypage/ |
+| 네비게이션 그래프 | nav graph | AppNavHost, AuthNavGraph, MemberNavGraph, HostNavGraph, CommonNavGraph | navigation/. HappyApp 분할. feature별 NavGraph. 20260312-god-file-splitting-phase1 | |
+| Route 인자 인코딩 | route args codec | RouteArgsCodec | utils/RouteArgsCodec.kt. encode/decode. Nav 쿼리 파라미터·경로 세그먼트 URL 인코딩 단일 소스. do-not-repeat §6.4 | |
+| QR 스캔 뷰 | QR scanner view | QrScannerView | CameraX + ML Kit Barcode, HostBookingScanScreen 카메라 탭 | ui/views/3_organisms/host_2_manage/ |
+| 검색 바이어스 | search bias | searchBiasCenter | Places Autocomplete LocationBias | FusedLocationProviderClient.getLastLocation() 또는 기본 좌표 |
+| PHP API 핸들러 | PHP API handler | htdocs/api/*_handlers/ | *_api.php는 라우터만. 비즈니스 로직은 admin_handlers/, handlers/, auth_handlers/로 분리. require_once 로드. project-scope §2.2. 20260312-god-file-splitting-phase4~6 | |
+| 세션 토큰 파서 | session token parser | session_token_parser.php, getSessionToken | htdocs/utils/. Bearer 우선, 구규격 병행. 20260312-api-stability-phase1 | |
+| auth 공통 에러 | auth response helper | auth_response_helper.php, AuthErrors, authSendError | auth_handlers/. 토큰 누락/무효 응답 규약. 20260312-api-stability-phase3 | |
+| Fake (테스트 더블) | Fake | src/androidTest | 인터페이스 수동 구현체. Mock 미사용 시 API·의존성 대체. FakeAuthApi 등. `happy-core-kotlin.mdc` §테스트 참고 | |
+
+---
+
+## 2. 한 줄 요약
+
+> 용어·변수명은 이 사전에 등록. 중복·금지 용어 사용 금지. `*ScreenState`·UI sealed 명명·위치는 표「뷰 상태」·`structure-kotlin.mdc` §1.5 `ui/views/state` 줄을 따른다.

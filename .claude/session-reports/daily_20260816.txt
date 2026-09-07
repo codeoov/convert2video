@@ -1,0 +1,396 @@
+﻿
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 05:08:41
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 05:10:45
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 05:11:00
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 05:18:39
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 07:07:38
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 07:30:54
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 07:36:29
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 08:30:33
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 09:09:01
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 09:12:57
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 09:16:10
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 09:30:00
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 10:05:25
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 10:33:34
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 11:27:18
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 11:29:40
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 11:58:19
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 12:19:22
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 12:44:38
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 13:03:53
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 13:04:19
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 14:20:25
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 14:37:21
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 14:52:48
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 15:33:36
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 16:20:08
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 16:39:29
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 16:40:48
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 16:41:59
+Project : c:/Users/songw/AndroidStudioProjects/convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 17:28:38
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 17:50:00
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 18:12:12
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.
+
+------------------------------------------------------------
+=== Claude Code Session Report ===
+Updated : 2026-08-16 18:33:39
+Project : c:\Users\songw\AndroidStudioProjects\convert2video
+
+Source  : ccusage not installed
+
+Install ccusage for automatic token/cost tracking:
+  npm install -g ccusage
+
+Or use the /usage command inside Claude Code to view current session stats.

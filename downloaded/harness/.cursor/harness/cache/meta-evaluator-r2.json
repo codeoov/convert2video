@@ -1,0 +1,16 @@
+{
+  "role": "evaluator",
+  "type": "C",
+  "round": 2,
+  "files": [
+    "nextjs-rule.mdc",
+    "nextjs-security.mdc",
+    "nextjs-ai-prevention.mdc",
+    "server-logs.mdc",
+    "nextjs-dev-cache.mdc",
+    "db-migration-verification.mdc"
+  ],
+  "chars": 16475,
+  "path": ".cursor/harness/cache/rule-context-evaluator-r2.md",
+  "generated_at": "2026-08-03T22:12:57.243065+00:00"
+}

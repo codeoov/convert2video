@@ -1,0 +1,40 @@
+---
+alwaysApply: true
+---
+
+# Cursor Rules 목차 — convert2video
+
+> 핵심·구조·제품 플로우·용어 본문은 **`CLAUDE.md`(단일 소스)** 로 이전됨. 아래 `.mdc` 파일은 Cursor 규칙 엔진·Harness 번들러 자동 로드용 포인터.
+
+**상시**: `CLAUDE.md` + `sprint-harness-gate.mdc` + `harness-loop.mdc` + 이 목차
+**`.kt/.kts` 작업 시**: `CLAUDE.md` § Anti-Repeat / Single-Source Rules (포인터: `do-not-repeat-kotlin.mdc`)
+
+## Harness (스프린트)
+
+| 파일 | 내용 |
+|------|------|
+| `sprint-harness-gate.mdc` | 트리거·메인 코딩 금지·Gate 표 |
+| `harness-loop.mdc` | planner → generator ↔ evaluator |
+| `harness-subagents.mdc` | Task 템플릿·종료 조건 |
+| `.cursor/commands/sprint-run.md` | `/sprint-run` |
+| `.cursor/agents/*.md` | planner / generator / evaluator / plan_evaluator |
+
+## 주제별
+
+| 주제 | 단일 소스 | Cursor 포인터 파일 |
+|------|-----------|---------------------|
+| 핵심 스택·네이밍 | `CLAUDE.md` § Core Conventions | `convert2video-core.mdc` |
+| 폴더·역할 | `CLAUDE.md` § Folder Structure | `structure-kotlin.mdc` |
+| 제품 플로우 | `CLAUDE.md` § Product Scope | `project-scope-kotlin.mdc` |
+| 단일 소스·금지 | `CLAUDE.md` § Anti-Repeat / Single-Source Rules | `do-not-repeat-kotlin.mdc` |
+| 용어 | `CLAUDE.md` § Terminology Glossary | `terminology-glossary.mdc` |
+
+## 검사 스크립트
+
+| 용도 | 경로 |
+|------|------|
+| 금지 import | `scripts/check-forbidden-imports.ps1` |
+| 로깅 | `scripts/check-logging-forbidden.ps1` |
+| 용어 | `scripts/check-terminology-forbidden.ps1` |
+| 일괄 | `.cursor/hooks/run-stop-checks.ps1` |
+| Harness 스모크 | `scripts/verify-harness-setup.ps1` |

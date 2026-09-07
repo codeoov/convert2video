@@ -4,53 +4,7 @@ globs: "**/*.{kt,kts}"
 alwaysApply: false
 ---
 
-# 재발 방지 규칙 (Kotlin) — convert2video
+> 전체 내용은 단일 소스 [`CLAUDE.md`](../../CLAUDE.md) § Anti-Repeat / Single-Source Rules 참고.
+> 이 파일은 Cursor 규칙 엔진과 Harness 번들러가 자동 로드하기 위한 포인터입니다.
 
-> `.kt/.kts` 작업 시 로드. 요약은 `convert2video-core.mdc`.
-
-## 1. 의존성·빌드
-
-- 버전·라이브러리는 `gradle/libs.versions.toml` → `libs.xxx`.
-- `app/build.gradle.kts`에 버전 문자열 하드코딩 금지.
-- `namespace` / `applicationId` = `com.example.convert2video`.
-
-## 2. UI
-
-- 색은 `MaterialTheme.colorScheme` 우선.
-- 로딩/진행: 기존 `LinearProgressIndicator` 패턴 유지하거나 공통 컴포넌트로 한곳에 모을 것(중복 인디케이터 난립 금지).
-- 화면에서 Room Dao/`VideoConverter` 직접 호출 금지 → ViewModel·Repository·Worker.
-
-## 3. 데이터·파일
-
-- 배경 CRUD는 `BackgroundRepository`만.
-- DB 접근은 `AppDatabase` + Dao. UI에서 Dao 직접 사용 금지.
-- 배경 파일 디렉터리: `BackgroundRepository.backgroundsDir` 단일 소스.
-- 삭제 시 DB row + 파일 동시 정리(현행 `deleteBackground` 패턴).
-
-## 4. 변환·WorkManager
-
-- Unique work 이름: `HomeViewModel.CONVERSION_WORK_NAME` (`audio_to_video_conversion`).
-- Worker 입력 키: `ConversionWorker.KEY_*` 상수만.
-- UI 상태 매핑: `WorkInfo` → `ConversionUiState` (`toConversionUiState`) 단일 소스 (`HomeViewModel.kt`). Screen에서 WorkInfo 분기 복제 금지.
-- `conversionState`·`startConversion`·`dismissConversionResult` — `HomeViewModel` 단일 소스. `BackgroundPickViewModel`에 잔존 금지.
-- `VideoConverter.convert`는 Flow 수집·Transformer 생성 모두 Looper 있는 스레드(보통 Main). Worker 내부에서 준수.
-
-## 5. l10n
-
-- 사용자 노출 문자열: `stringResource` / `context.getString`.
-- `LaunchedEffect`·콜백·`semantics { }` 람다 안에서 `stringResource` 호출 금지 → Composable 본문에서 미리 `val`.
-
-## 6. 에러
-
-- catch 비우지 않기. 로그 + 사용자 Fallback.
-- 운영 빌드에서 예외 메시지·스택을 Snackbar에 그대로 넣지 않기.
-
-## 7. 금지 이식
-
-- Retrofit/OkHttp/Hilt/PHP API 레이어를 이 앱에 복사하지 않음.
-- happy_v12 Atomic `5_pages` / Route.kt / gathering 플로우 이식 금지.
-- 검사: `scripts/check-forbidden-imports.ps1`, `check-terminology-forbidden.ps1`, `check-logging-forbidden.ps1`.
-
-## 8. 한 줄 요약
-
-> libs.toml · Repository/Worker 단일 경로 · ConversionUiState 매핑 복제 금지 · 이전 앱 스택·용어 이식 금지.
+@../../CLAUDE.md

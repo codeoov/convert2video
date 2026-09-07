@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "planPath": "C:\\Users\\songw\\AndroidStudioProjects\\convert2video\\plan-blueprint-pro-billing.md",
+  "planSha256": "1BF43AB747F30FAFBCE46D6B9011A94A3CE24D82AFDCDF8F0C75454F78907E56",
+  "checkout": "C:\\Users\\songw\\AndroidStudioProjects\\convert2video",
+  "phases": [
+    {
+      "id": "P13",
+      "mode": "harness",
+      "dependsOn": ["P10", "P11", "P12"],
+      "targets": [
+        "app/src/main/java/com/example/convert2video/ui/screens/options/OptionsScreen.kt",
+        "app/src/androidTest/java/com/example/convert2video/ui/screens/options/OptionsScreenBillingTest.kt"
+      ],
+      "requiredChecks": [
+        ".\\gradlew.bat :app:testGoogleDebugUnitTest --no-daemon",
+        ".\\gradlew.bat :app:testHuaweiDebugUnitTest --no-daemon",
+        "rg -n 'supportsBilling|StartIntentSenderForResult|pro_upgrade|pro_restore|onPurchaseActivityResult' app\\src\\main\\java\\com\\example\\convert2video\\ui\\screens\\options\\OptionsScreen.kt",
+        ".\\scripts\\check-forbidden-imports.ps1"
+      ],
+      "manualGates": [
+        "Google purchase sheet opens and the callback is processed exactly once",
+        "Huawei PendingIntent -> ActivityResult -> parser -> verify ordering is preserved",
+        "Rotation and background resume do not leave the in-flight billing state stuck"
+      ]
+    }
+  ],
+  "selected": ["P13"]
+}

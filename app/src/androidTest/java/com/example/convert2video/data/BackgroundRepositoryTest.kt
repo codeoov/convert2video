@@ -90,4 +90,39 @@ class BackgroundRepositoryTest {
         assertNull(db.backgroundDao().getSelected())
         assertTrue(!File(added.filePath).exists())
     }
+
+    @Test
+    fun success_deleteBackground_clearsLastUsedWhenPathMatches() = runTest {
+        repository.addBackground(sourceImageUri())
+        val added = db.backgroundDao().observeAll().first().single()
+        val settings = SettingsRepository(context)
+        val previous = settings.lastUsedBackgroundPath.first()
+        try {
+            settings.setLastUsedBackgroundPath(added.filePath)
+
+            repository.deleteBackground(added)
+
+            assertNull(settings.lastUsedBackgroundPath.first())
+        } finally {
+            settings.setLastUsedBackgroundPath(previous)
+        }
+    }
+
+    @Test
+    fun success_deleteBackground_keepsLastUsedWhenPathDiffers() = runTest {
+        repository.addBackground(sourceImageUri())
+        val added = db.backgroundDao().observeAll().first().single()
+        val settings = SettingsRepository(context)
+        val previous = settings.lastUsedBackgroundPath.first()
+        val otherPath = File(context.cacheDir, "other_bg.jpg").absolutePath
+        try {
+            settings.setLastUsedBackgroundPath(otherPath)
+
+            repository.deleteBackground(added)
+
+            assertEquals(otherPath, settings.lastUsedBackgroundPath.first())
+        } finally {
+            settings.setLastUsedBackgroundPath(previous)
+        }
+    }
 }

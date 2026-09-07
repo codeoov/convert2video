@@ -1,0 +1,77 @@
+---
+alwaysApply: true
+---
+
+# 핵심 규칙 (Kotlin) — happy_v12
+
+**한 줄**: Kotlin+Compose+Hilt+Retrofit 앱 / PHP API·MySQL / 용어 `gathering`·`booking`·`session` / **자세한 표·플로우는 `rules-index-kotlin.mdc` 목차로 해당 파일 열기.**
+
+---
+
+## 1. 스택·금지
+
+- **클라이언트**: Kotlin, Compose, MVVM, StateFlow/SharedFlow, Hilt, Retrofit+OkHttp, DataStore.
+- **서버**: PHP 라우터 `*_api.php`, 로직 `*_handlers/`, Bearer 세션. Kotlin에서 DB 직접 금지, Flutter 금지.
+- **코드 금지 용어**: activity(모임 의미), meetup, reservation, my_info — 대신 gathering, booking, my_page.
+
+---
+
+## 2. 용어·동사 (최소)
+
+- 모임 `gathering`, 예약 `booking`, 회차 `session`, 마이페이지 `my_page`.
+- **Verify** = 토큰/OTP 검증 / **Confirm** = 사용자 확정 / **Check** = 서버 조회·가능 여부 (라우트명에는 Check 안 씀). 상세 표는 `terminology-glossary.mdc` §5a.
+- **사람 용어**: 전역 계정은 `user`(userId), 맥락 참여자는 `participant`(예: chat participant, gathering participant). 상세는 `terminology-glossary.mdc` §1.
+- **업로드 동사**: Repository는 `uploadFrom*`, ViewModel/UseCase는 의도형 `upload*Image` 사용. 상세 표는 `terminology-glossary.mdc` §5b.
+- 신규 용어·Request DTO 추가 시 **glossary 등록** (do-not-repeat §5.2).
+
+---
+
+## 3. 로깅·에러·답변 마무리 (단일 기준)
+
+- **Kotlin**: `AppLogger`만 (직접 `Log.*` 금지). **PHP**: `Logger.php` (직접 `error_log` 금지). 민감값 전체 로깅 금지.
+- API·I/O·비동기는 try-catch, catch 비우지 않기. **운영**에서는 사용자에게 시스템 상세·스택 노출 금지 → `ErrorDisplayHelper` 패턴 (`do-not-repeat-kotlin.mdc` §4.1).
+- **환경별 에러 표시 (앱/UI)**: **개발**에서는 SnackBar·오버레이 등으로 빠른 피드백 허용. **운영**에서는 시스템 에러 코드·스택트레이스를 사용자에게 보여주지 않고 정중한 Fallback 메시지만.
+- **작업 완료 답변**: (1) 한 일·수정 파일 (2) 확인 방법 (3) 다음 스텝 (4) 남은 리스크(있으면). UI 통일·Dead Code 정리 후에는 `docs/dev-records/kotlin/`에 검사·체크리스트 기록.
+- Cursor **유저 룰**에는 위 답변·에러 노출을 다시 길게 쓰지 말 것 → 이 섹션이 기준. 유저 룰에는 언어·인용 형식·실행 습관 등만 둔다 (권장 초안: `.cursor/user-rules-minimal-ko.md`).
+
+---
+
+## 4. 네이밍
+
+- 클래스·파일 PascalCase, 변수·함수 camelCase, Boolean은 `is`/`has`/`should`.
+- **Screen** `XxxScreen.kt`, **ViewModel** `XxxViewModel.kt`, **Repository** `XxxRepository.kt`, **Handler** `handlers/XxxHandler.kt`, **Helper** `helpers/XxxHelper.kt`, **Utils** `utils/XxxUtils.kt` (object).
+- 모호한 이름 `data`/`info`/`temp` 금지.
+
+---
+
+## 5. Deprecated
+
+- 새 코드에 Deprecated API 금지. 대체 API 우선. **불가피** 시 최소 범위 `@Suppress("DEPRECATION")` + TODO(날짜)·사유·계획 주석. 래퍼는 `domain/contracts/` 내부만 예외 가능.
+
+---
+
+## 6. 테스트
+
+- Unit `src/test/`, AndroidTest `src/androidTest/`, 패키지는 main과 동일. 클래스 `XxxTest` / `XxxAndroidTest`, 메서드 `success_` / `failure_` / `exception_` 접두. Given/When/Then 주석. Fake는 androidTest에 수동 구현.
+
+---
+
+## 7. 재발방지 핵심 (자세한 §는 do-not-repeat)
+
+- **Route**: `config/Route.kt` 단일 소스, 하드코딩 금지. 인코딩 `RouteArgsCodec`.
+- **설정**: 의존성 `libs.versions.toml`, 앱에서 base URL은 `ApiConfig.baseUrl`만. cleartext는 debug 전용 매니페스트.
+- **UI**: `5_pages`에서 `Scaffold` 직접 금지 → 템플릿·`AuthStepScaffold`. 색은 `MaterialTheme` / 확장 테마. 여백·크기는 `AppSpacing`·`AppSizes` (**임의 `NN.dp` 금지**). 로딩은 `AppLoadingIndicator`만 (pages/organisms에서 `CircularProgressIndicator` 직접 금지).
+- **API**: 타임아웃·검증. `@Body`는 전용 Request DTO (`Map` 금지). action/상태/limit은 `ApiActions`·`DomainStatus`·`DomainLimits`·`ApiPaging`·`ApiTimeouts`·`ChatConstants`.
+- **Repository `Result`**: 실패는 `Result.failure`만 — `recover { throw … }` 금지. 세션·인증 경로 ViewModel은 예외 전파 방어.
+- **l10n**: `stringResource` / `context.getString`. **비 Composable 콜백·semantics 람다 안에서 stringResource 금지** (미리 변수로).
+- **기타 단일 소스**: `GatheringSearchPolicy.hasKeywordOrFilter`, `BannerLinkTapUtils.resolve` + `ExternalUrlOpenHelper`, `GeocodingUtils`, `QrCodeUtils.buildQrImageUrl`, 홈 탭은 `ScrollableResourceTabRowMolecule` 등 → 전부 **`do-not-repeat-kotlin.mdc`**.
+- **래핑**: repository/controller 등에서 retrofit/okhttp/gson 직접 import 금지 계약 — 경계는 `do-not-repeat-kotlin.mdc` §7.
+- **SQL 파일 위치**: 프로젝트 SQL 스크립트는 루트 `sql/` 폴더를 기본 위치로 사용. (`htdocs/database/`는 레거시/참고 자산)
+
+---
+
+## 8. 구조·플로우 어디에 있나
+
+- **폴더 트리·역할 분리**: `structure-kotlin.mdc`
+- **로그인/호스트/딥링크/모임 만들기 등 서술**: `project-scope-kotlin.mdc`
+- **용어 표·동사 상세**: `terminology-glossary.mdc` (DTO·모델·config·용어·동사 상세 표; §1 도메인 용어, §5a Verify/Confirm/Check, §5b 업로드 네이밍)

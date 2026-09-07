@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "bash .cursor/hooks/harness-arm-on-prompt.sh",
+        "matcher": "UserPromptSubmit",
+        "timeout": 5
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "bash .cursor/hooks/harness-inject-rules-on-task.sh",
+        "matcher": "Task",
+        "timeout": 15
+      },
+      {
+        "command": "bash .cursor/hooks/harness-block-main-write.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 5
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "bash .cursor/hooks/harness-subagent-start.sh",
+        "timeout": 5
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "bash .cursor/hooks/harness-subagent-stop.sh",
+        "timeout": 15
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/harness-stop-gate.sh",
+        "timeout": 10
+      },
+      {
+        "command": "bash .cursor/hooks/run-stop-checks.sh",
+        "timeout": 60
+      }
+    ]
+  }
+}

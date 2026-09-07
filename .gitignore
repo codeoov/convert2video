@@ -13,3 +13,31 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Tauri desktop app
+desktop/target/
+desktop/**/target/
+desktop/node_modules/
+desktop/dist/
+desktop/src-tauri/gen/schemas/
+
+# Kotlin compiler daemon caches
+.kotlin/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Release signing
+keystore.properties
+*.jks
+*.keystore
+
+# Phase Run local execution state, task identifiers, and verification logs
+/.phase-run/
+
+# Raw on-device diagnostic captures (see docs/ for distilled findings)
+/p0-*.log
+/p0-*.xml
+*-repro.log

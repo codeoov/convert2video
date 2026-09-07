@@ -1,0 +1,101 @@
+---
+description: "happy_v12 Phase 5 — admin dashboard extension: four groups (AdminHomeGroup reports/users/tickets, AdminFinanceGroup settlements/refunds, AdminApprovalGroup catalog/host applications, AdminManageGroup coupons/banners/audit log), AdminViewModel, AdminRepository, AdminApi, domain/admin models, AdminErrorHelper. Use when editing admin dashboard screens, admin controller state, admin API/DTOs, or PHP admin endpoints."
+alwaysApply: false
+globs:
+  - "**/admin_1_home/**/*.kt"
+  - "**/3_organisms/admin_1_home/**/*.kt"
+  - "**/controllers/admin/**/*.kt"
+  - "**/data/remote/AdminApi.kt"
+  - "**/data/repository/Admin*.kt"
+  - "**/domain/admin/**/*.kt"
+  - "**/di/AdminModule.kt"
+  - "**/helpers/AdminErrorHelper.kt"
+  - "**/config/AdminErrorCodes.kt"
+  - "**/AdminBottomNavBarOrganism.kt"
+  - "**/htdocs/api/admin_api.php"
+  - "**/htdocs/api/v1/admin.php"
+---
+
+# Phase 5: 관리자 확장 — happy_v12
+
+**목표**: 관리자 대시보드 4그룹(홈·재무·승인·관리) 전체 완성  
+**상태**: ✅ 완료
+
+---
+
+## 1. 관리자 대시보드 구조
+
+| 그룹 | 탭 | 화면 | 역할 |
+|------|-----|------|------|
+| AdminHomeGroup | 신고 | AdminReportsTab | 신고 목록·처리 |
+| | 유저 | AdminUsersTab | 유저 목록·정지/해제 |
+| | 분쟁 | AdminTicketsTab | 문의 티켓·답변 |
+| AdminFinanceGroup | 정산 | AdminSettlementsTab | 미정산 목록·정산 처리 |
+| | 환불 | AdminRefundsTab | 환불 요청·처리 |
+| AdminApprovalGroup | 카탈로그 | AdminCatalogTab | 모임 승인/반려 |
+| | 호스트 | AdminHostApplicationsTab | 호스트 신청 승인/반려 |
+| AdminManageGroup | 쿠폰 | AdminCouponsTab | 쿠폰 관리 |
+| | 배너 | AdminBannersTab | 배너 CRUD |
+| | 감사 로그 | AdminAuditLogTab | 감사 로그 조회 |
+
+**참고**: Phase 4에서 승인(AdminApprovalGroup) 완료. Phase 5는 홈·재무·관리 그룹.
+
+---
+
+## 2. AdminHomeGroup (신고·유저·분쟁)
+
+| 항목 | API | 상태 |
+|------|-----|------|
+| AdminReportsTab | list_reports_admin, resolve_report | ✅ |
+| AdminUsersTab | list_users_admin, suspend_user, release_user | ✅ |
+| AdminTicketsTab | list_tickets_admin, add_ticket_reply | ✅ |
+
+---
+
+## 3. AdminFinanceGroup (정산·환불)
+
+| 항목 | API | 상태 |
+|------|-----|------|
+| AdminSettlementsTab | list_pending_settlements, settle_payment | ✅ |
+| AdminRefundsTab | list_refund_requests(?), admin_refund | ✅ |
+
+---
+
+## 4. AdminManageGroup (쿠폰·배너·감사 로그)
+
+| 항목 | API | 상태 |
+|------|-----|------|
+| AdminCouponsTab | list_coupons_admin, create_coupon 등 | ✅ |
+| AdminBannersTab | list_banners_admin, create_banner, update_banner, delete_banner | ✅ |
+| AdminAuditLogTab | list_audit_logs 등 | ✅ |
+
+---
+
+## 5. AdminViewModel·AdminRepository
+
+| 기능 | 상태 |
+|------|------|
+| ensureHomeGroupLoaded | ✅ |
+| ensureFinanceGroupLoaded | ✅ |
+| ensureApprovalGroupLoaded | ✅ |
+| ensureManageGroupLoaded | ✅ |
+| loadDashboardSummary | ✅ |
+| loadTransactionSummary | ✅ |
+| Result 콜백 (resolveReport, suspendUser, settlePayment 등) | ✅ |
+
+---
+
+## 6. Phase 5 완료 체크리스트
+
+- [x] AdminHomeGroup (신고·유저·분쟁)
+- [x] AdminFinanceGroup (정산·환불)
+- [x] AdminApprovalGroup (카탈로그·호스트) — Phase 4
+- [x] AdminManageGroup (쿠폰·배너·감사 로그)
+- [x] AdminCouponsTab API·UI 검증 (하드코딩→stringResource, AppLoadingIndicator)
+- [x] AdminAuditLogTab API·UI 검증 (하드코딩→stringResource, AppLoadingIndicator)
+
+---
+
+## 7. 한 줄 요약
+
+> Phase 5: 관리자 대시보드 4그룹(홈·재무·승인·관리) 전체 구현 완료. 쿠폰·감사 로그 검증 필요.

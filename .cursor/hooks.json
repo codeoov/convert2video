@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/harness-arm-on-prompt.ps1",
+        "matcher": "UserPromptSubmit",
+        "timeout": 5
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/harness-inject-rules.ps1",
+        "matcher": "Task",
+        "timeout": 20
+      },
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/harness-block-main-write.ps1",
+        "matcher": "Write|Edit|StrReplace",
+        "timeout": 5
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/harness-subagent-start.ps1",
+        "timeout": 5
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/harness-subagent-stop.ps1",
+        "timeout": 15
+      }
+    ],
+    "stop": [
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/harness-stop-gate.ps1",
+        "timeout": 10
+      },
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/run-stop-checks.ps1",
+        "timeout": 120
+      },
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/run-stop-compile.ps1",
+        "timeout": 900
+      }
+    ]
+  }
+}

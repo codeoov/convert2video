@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="quick_record"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_record_label"
+        android:shortcutLongLabel="@string/shortcut_record_label">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetClass="com.example.convert2video.MainActivity"
+            android:targetPackage="com.convert2video">
+            <extra
+                android:name="com.example.convert2video.EXTRA_QUICK_RECORD"
+                android:value="true" />
+        </intent>
+    </shortcut>
+</shortcuts>

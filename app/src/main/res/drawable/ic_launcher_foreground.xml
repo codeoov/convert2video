@@ -1,30 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive icon foreground — 황금 원형 배지 + 오디오 파형 바 + 스파클
+    뷰포트 108×108dp / 실질 콘텐츠를 inner 72dp safe zone (18–90dp) 내에 배치
+    원: 반지름 34dp (cx=54, cy=54) → safe zone 2dp 여백 확보(≤36dp), 안티앨리어싱 클리핑 방지
+    파형: 9개 바, strokeWidth 3dp, round cap, 중심 x=34..74(5dp 간격), 높이 r=34 비례 조정
+    스파클: 소스 android-chrome-512x512.png 오른쪽 하단 4각 다이아몬드 장식과 일치
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
+
+    <!--
+        황금 원형 배지 (radial gradient: 밝은 금 → 브랜드 앰버)
+        gradientRadius=44 은 viewport 단위. 원 반지름 r=34보다 크게 설정해
+        하단 amber 비네팅(어두운 가장자리) 효과를 의도함. centerY=40(원 중심
+        54보다 위)으로 상단 하이라이트 재현.
+    -->
+    <path
+        android:pathData="M54,20 A34,34,0,0,1,88,54 A34,34,0,0,1,54,88 A34,34,0,0,1,20,54 A34,34,0,0,1,54,20 Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="40"
+                android:gradientRadius="44">
+                <item android:color="#FFDC6E" android:offset="0.0" />
+                <item android:color="#FFC93C" android:offset="0.40" />
+                <item android:color="#9A6010" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
+
+    <!--
+        오디오 파형 바 (흰색, round cap)
+        중심 x:  34,  39,  44,  49,  54,  59,  64,  69,  74
+        반-높이:  7,  10,  14,  18,  21,  18,  14,  10,   7   (r=34 기준 비례 조정)
+    -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:pathData="M34,47 L34,61
+                          M39,44 L39,64
+                          M44,40 L44,68
+                          M49,36 L49,72
+                          M54,33 L54,75
+                          M59,36 L59,72
+                          M64,40 L64,68
+                          M69,44 L69,64
+                          M74,47 L74,61"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!--
+        스파클 장식 — 소스 이미지 오른쪽 하단의 4각 다이아몬드와 일치
+        cx=85, cy=85 / outer R=2 / inner r≈0.57(=0.4·√2) @ 45°
+        safe zone 내 배치: x:83-87, y:83-87 → 경계 90dp 기준 3dp 여백 확보
+        원 중심(54,54)으로부터 거리 = sqrt(31²+31²) ≈ 43.8dp > r=34 → 배지 바깥 유지
+    -->
+    <path
+        android:fillColor="#F6EFE4"
+        android:pathData="M85,83 L85.4,84.6 L87,85 L85.4,85.4 L85,87 L84.6,85.4 L83,85 L84.6,84.6 Z" />
 </vector>

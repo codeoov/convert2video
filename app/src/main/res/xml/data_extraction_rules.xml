@@ -5,15 +5,23 @@
 -->
 <data-extraction-rules>
     <cloud-backup>
+        <exclude domain="file" path="datastore/pairing_token.preferences_pb" />
+        <exclude domain="file" path="datastore/entitlement.preferences_pb" />
+        <exclude domain="sharedpref" path="crash_reporter.xml" />
+        <exclude domain="sharedpref" path="youtube_auth.xml" />
+        <exclude domain="sharedpref" path="drive_auth.xml" />
+        <exclude domain="sharedpref" path="install_id.xml" />
         <!-- TODO: Use <include> and <exclude> to control what is backed up.
         <include .../>
         <exclude .../>
         -->
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude domain="file" path="datastore/pairing_token.preferences_pb" />
+        <exclude domain="file" path="datastore/entitlement.preferences_pb" />
+        <exclude domain="sharedpref" path="crash_reporter.xml" />
+        <exclude domain="sharedpref" path="youtube_auth.xml" />
+        <exclude domain="sharedpref" path="drive_auth.xml" />
+        <exclude domain="sharedpref" path="install_id.xml" />
     </device-transfer>
-    -->
 </data-extraction-rules>

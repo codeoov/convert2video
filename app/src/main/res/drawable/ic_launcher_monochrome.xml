@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 13+ 테마 아이콘용 monochrome 레이어
+    시스템이 알파 채널에 틴트를 입히므로 단색(흰색)으로만 표현.
+
+    설계: 흰색 원 + evenOdd 채우기로 파형 바 영역을 투명 컷아웃 처리
+      - fillType="evenOdd" → 원 안에 포함된 직사각형 경로가 투명 구멍이 됨
+      - 원: 반지름 34dp (r=36→34, safe zone 2dp 여백 확보)
+      - 직사각형 바 9개: ic_launcher_foreground.xml의 r=34 비례 높이에
+        strokeLineCap="round" strokeWidth=3 의 round cap(±1.5dp) 반영하여
+        상하 각각 1.5dp 확장 → foreground 렌더링과 시각적 일치
+      - 스파클: 원 바깥(dist≈43.8dp > r=34) subpath 추가.
+        evenOdd 규칙상 스파클 내부점은 교차 횟수 1(홀수) → FILLED(흰색) ✓
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!--
+        원 (r=34) + 파형 바 직사각형 9개 (evenOdd cutout) + 스파클 (흰색 채움)
+        바 y좌표: foreground 중심±half-height ±1.5 (round cap 보정)
+          Bar1,9  (x:32.5-35.5): y 47-1.5=45.5 ~ 61+1.5=62.5
+          Bar2,8  (x:37.5-40.5): y 44-1.5=42.5 ~ 64+1.5=65.5
+          Bar3,7  (x:42.5-45.5): y 40-1.5=38.5 ~ 68+1.5=69.5
+          Bar4,6  (x:47.5-50.5): y 36-1.5=34.5 ~ 72+1.5=73.5
+          Bar5    (x:52.5-55.5): y 33-1.5=31.5 ~ 75+1.5=76.5
+        스파클 (x:83-87, y:83-87): 원 바깥, evenOdd교차수=1(홀수)→흰색 채움
+    -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="
+            M54,20 A34,34,0,0,1,88,54 A34,34,0,0,1,54,88 A34,34,0,0,1,20,54 A34,34,0,0,1,54,20 Z
+            M32.5,45.5 L35.5,45.5 L35.5,62.5 L32.5,62.5 Z
+            M37.5,42.5 L40.5,42.5 L40.5,65.5 L37.5,65.5 Z
+            M42.5,38.5 L45.5,38.5 L45.5,69.5 L42.5,69.5 Z
+            M47.5,34.5 L50.5,34.5 L50.5,73.5 L47.5,73.5 Z
+            M52.5,31.5 L55.5,31.5 L55.5,76.5 L52.5,76.5 Z
+            M57.5,34.5 L60.5,34.5 L60.5,73.5 L57.5,73.5 Z
+            M62.5,38.5 L65.5,38.5 L65.5,69.5 L62.5,69.5 Z
+            M67.5,42.5 L70.5,42.5 L70.5,65.5 L67.5,65.5 Z
+            M72.5,45.5 L75.5,45.5 L75.5,62.5 L72.5,62.5 Z
+            M85,83 L85.4,84.6 L87,85 L85.4,85.4 L85,87 L84.6,85.4 L83,85 L84.6,84.6 Z" />
+</vector>

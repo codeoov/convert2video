@@ -1,0 +1,181 @@
+---
+description: "happy_v12 Phase 2 — member & host domain: member home 5 tabs (home/discovery/lounge/chats/my_page; views folders member_1_home~member_5_mypage per structure-kotlin Phase D), gathering search/detail/wishlist/recommended/vertical-more, bookings/ticket/review, lounge write/feed, chat list/room, my_page profile/settings/dispute, host onboarding, host home (home/manage/stats/settlement), manage gathering/hub/chat/verify/scan/reviews, create gathering flow, admin dashboard gate & tabs, Google Map picker, ProfileView, push/deeplink routing (Route tables in rule body). Use when editing those screens, nav graphs, ViewModels, or Phase 2 checklist."
+alwaysApply: false
+globs:
+  - "**/member_1_home/**/*.kt"
+  - "**/member_2_discovery/**/*.kt"
+  - "**/member_3_lounge/**/*.kt"
+  - "**/member_4_chats/**/*.kt"
+  - "**/member_5_mypage/**/*.kt"
+  - "**/member_main/**/*.kt"
+  - "**/host_0_onboarding/**/*.kt"
+  - "**/host_1_home/**/*.kt"
+  - "**/host_2_manage/**/*.kt"
+  - "**/host_4_settlement/**/*.kt"
+  - "**/admin_1_home/**/*.kt"
+  - "**/ui/views/5_pages/common/GoogleMapPickerScreen.kt"
+  - "**/ui/views/5_pages/common/ProfileViewScreen.kt"
+  - "**/handlers/PushNotificationHandler.kt"
+  - "**/controllers/common/DeepLinkViewModel.kt"
+  - "**/controllers/admin/**/*.kt"
+---
+
+# Phase 2: 멤버·호스트 — happy_v12
+
+**목표**: 멤버 홈·모임·예약·채팅·마이페이지, 호스트 관리·모임 만들기·입장 확인·정산  
+**상태**: ✅ 완료
+
+---
+
+## 1. 멤버 홈 (member_1_home)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| MemberHomeGate | HOME | 로그인·기본정보 체크, 5탭(홈/발견/라운지/채팅/마이페이지) |
+| MemberHomeScreen | (HOME 내) | 5탭 셸: 홈=`Member1HomePage`, 발견·라운지·채팅·마이페이지 탭 콘텐츠 |
+| GatheringDetailScreen | GATHERING_DETAIL/{gatheringId} | 모임 상세, 예약·찜 |
+| GatheringSearchScreen | GATHERING_SEARCH | 검색 |
+| GatheringWishlistScreen | GATHERING_WISHLIST | 찜 목록 |
+| GatheringRecommendedScreen | GATHERING_RECOMMENDED | 추천 모임 |
+| VerticalCardMoreScreen | VERTICAL_CARD_MORE/{sectionType} | 세로 카드 더보기 (featured \| popular \| recommended \| new) |
+| MyBookingsScreen | GATHERING_MY_BOOKINGS | 내 예약 |
+| BookingTicketScreen | BOOKING_TICKET/{bookingId} | 예약 티켓, QR, 리뷰 작성 |
+| GatheringReviewWriteScreen | GATHERING_REVIEW_WRITE/{gatheringId} | 모임 리뷰 작성 |
+
+---
+
+## 2. 발견 (member_2_discovery)
+
+**Views 단일 소스**: 발견(하단 탭 인덱스 1)과 동일한 모임 탐색·유형·퀵필터 브라우즈 UI는 **`3_organisms/member_2_discovery` · `4_templates/member_2_discovery` · `5_pages/member_2_discovery` · `ui/views/state/member_2_discovery`** 트리에 둔다 (`structure-kotlin.mdc` §1.5). 풀스크린 `GATHERING_BY_TYPE` 등은 같은 템플릿·유기체를 재사용한다.
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| DiscoveryTabContent 등 | (HOME 내) | 모임 탐색·필터 허브; 페이지·상태·템플릿 패키지는 `member_2_discovery` |
+
+---
+
+## 3. 라운지 (member_3_lounge)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| Member3LoungePage | (HOME 내) | 피드 목록 |
+| LoungeWriteScreen | LOUNGE_WRITE | 피드 글쓰기 |
+| LoungeFeedScreen | LOUNGE_FEED/{feedId} | 피드 상세 |
+
+---
+
+## 4. 채팅 (member_4_chats)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| Member4ChatsPage | (HOME 내) | 채팅 목록 |
+| ChatRoomScreen | CHAT_ROOM/{chatId} | 채팅방 |
+
+---
+
+## 5. 마이페이지 (member_5_mypage)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| Member5MyPagePage | (HOME 내) | 마이페이지 탭 |
+| EditProfileScreen | EDIT_PROFILE | 프로필 수정 |
+| FriendInviteScreen | FRIEND_INVITE | 친구 초대 |
+| PrivacySettingsScreen | PRIVACY_SETTINGS | 개인정보 설정 |
+| LanguageSettingsScreen | LANGUAGE_SETTINGS | 언어 설정 |
+| CountryRegionSettingsScreen | COUNTRY_REGION_SETTINGS | 국가/지역 |
+| LoginHistoryScreen | LOGIN_HISTORY | 로그인 기록 |
+| ChangeEmailScreen | CHANGE_EMAIL | 이메일 변경 |
+| ChangePhoneScreen | CHANGE_PHONE | 전화번호 변경 |
+| DeviceFingerprintSettingsScreen | DEVICE_FINGERPRINT_SETTINGS | 지문 인증 설정 |
+| DisputeCreateTicketScreen | DISPUTE_CREATE_TICKET | 문의 티켓 생성 |
+| DisputeMyTicketsScreen | DISPUTE_MY_TICKETS | 내 문의 목록 |
+
+---
+
+## 6. 호스트 온보딩 (host_0_onboarding)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| HostOnboardingIntroScreen | HOST_ONBOARDING_INTRO | 안내, 이용약관 동의 |
+| HostOnboardingFormScreen | HOST_ONBOARDING_FORM | 사업자·정산·세금 입력 |
+| HostOnboardingCompleteScreen | HOST_ONBOARDING_COMPLETE | 완료 안내 → HOST_HOME |
+
+---
+
+## 7. 호스트 홈·관리 (host_1_home, host_2_manage)
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| HostHomeScreen | HOST_HOME | 서랍 셸 4메뉴(홈/관리/통계/정산). `HostSidebarPrimaryDestination` 상태로 본문 전환, 하단 NavigationBar 없음 |
+| HostHomeTab | (HOST_HOME 내) | 맨 위 모임 만들기 CTA, 내 모임 목록(카드+다음 일정 플레이스홀더); 카드 탭 → HOST_GATHERING_DETAIL; 리뷰 버튼 없음(Phase 5에서 host_2_manage 진입 예정) |
+| HostManageTab | (HOST_HOME 내) | 정렬·모임 카드 목록; 카드 탭 → HOST_GATHERING_DETAIL |
+| HostGatheringDetailScreen | HOST_GATHERING_DETAIL/{gatheringId} | 호스트 모임 상세(Phase 2 플레이스홀더; 이후 멤버 GatheringDetail 닮음·섹션 편집). 관리 메뉴 진입 가능 |
+| ManageMyGatheringScreen | MANAGE_MY_GATHERING/{gatheringId} | 모임 관리(일정·수정 요청·예약자 등) |
+| HostGatheringHubScreen | HOST_GATHERING_HUB/{gatheringId} | 모임 운영 허브(예약·참가자·채팅·일정·리뷰 탭; 채팅 탭은 ChatRoom 임베드 + ChatMyGathering 진입) |
+| HostGatheringBookingsScreen | HOST_GATHERING_BOOKINGS/{gatheringId} | 예약자 목록 |
+| HostBookingVerifyScreen | HOST_BOOKING_VERIFY?bookingId=&token= | 입장 확인(예약 번호) |
+| HostBookingScanScreen | HOST_BOOKING_SCAN | QR 스캔·붙여넣기 |
+| HostGatheringReviewsScreen | HOST_GATHERING_REVIEWS | 내 모임 리뷰 |
+| CreateGatheringScreen | HOST_CREATE_GATHERING | 모임 만들기 10단계 (`5_pages/host_1_home/routes`; 유기체 `3_organisms/host_1_home/create_gathering/`) |
+| HostStatsTab | (HOST_HOME 내) | 통계 탭 → `HostStatsPage`(`host_3_stats`): 전체 집계·모임별 카드(샘플 데이터; API 후속). 용어·UI 타입은 glossary Phase ST0~ST1. |
+| HostStatsPage | (HOST_HOME 내, HostStatsTab 경유) | `HostStatsTabTemplate`·`HostStatsOverviewTemplate` + `HostStatsViewModel`; 모임 카드 탭 → `HOST_GATHERING_STATS_DETAIL` |
+| HostGatheringStatsDetailScreen | HOST_GATHERING_STATS_DETAIL/{gatheringId} | 모임별 통계 상세(기간 칩·퍼널·전월 대비·리뷰 분포; 샘플). `HostGatheringStatsDetailViewModel`. `HostStatsDetailUi` 등 state는 `terminology-glossary.mdc` ST1. |
+| HostSettlementTab | (HOST_HOME 내) | 정산 탭. `HostGatheringScope.Single`은 `gatheringId`로 목록 필터(제목 문자열 비교 금지) |
+| ChatMyGatheringScreen | CHAT_MY_GATHERING/{chatId} | 모임별 채팅 관리(`5_pages/host_2_manage/routes`; 허브 채팅 탭 등에서 진입) |
+
+### 7a. 호스트 IA 재구성 — Phase 0 (기준 고정)
+
+**단일 소스**: `docs/dev-records/kotlin/20260408-host-ia-phase0-baseline.md`
+
+- **서랍 메뉴**: 홈 · 관리 · **통계** · 정산. 통계는 `host_3_stats` 트리·샘플 UI·`HOST_GATHERING_STATS_DETAIL` 상세(실데이터 API는 후속).
+- **`host_1_home`(홈 탭)**: 새 모임 만들기 CTA + 내 모임 목록(카드에 다음 회차 일시는 API 보강 후). **내 모임 리뷰**는 홈에서 빼고 **`host_2_manage` 진입**으로 이전(구현 Phase 5).
+- **홈 목록 카드 탭**: **호스트 모임 상세**(멤버 GatheringDetail 닮음)로 진입 — 기본 경로 `5_pages/host_1_home/routes/` 등 (Route 추가는 Phase 2).
+- **수정 정책(후속)**: 섹션 단위 수정 요청 · 관리자 승인 · 대기열 · 전후 diff · 호스트 코멘트(상세는 Phase 3~4·관리자 Phase 6).
+
+---
+
+## 8. 공통·관리자
+
+| 화면 | Route | 역할 |
+|------|-------|------|
+| GoogleMapPickerScreen | GOOGLE_MAP_PICKER | 모임 만들기 장소 선택 |
+| ProfileViewScreen | PROFILE_VIEW | 프로필 보기 |
+| AdminDashboardGateScreen | ADMIN_DASHBOARD | 관리자 진입 |
+| AdminDashboardScreen | (ADMIN_DASHBOARD 내) | 4메뉴(홈/재무/승인/관리), 배너 관리 |
+
+---
+
+## 9. 푸시·딥링크
+
+- **초기화·딥링크 상세**: `project-scope-kotlin.mdc §8.0` 참고 (OneSignal 초기화, 토큰 전송, 딥링크 URI 목록)
+- **알림 클릭**: PushNotificationHandler → `DeepLinkViewModel.handlePushNavigation` → `Route` (채팅방은 `ChatDestinations`, 그 외 HOME이면 필요 시 **하단 탭**)
+- **HOME 하단 탭 (Phase D3)**: 인덱스 0=홈, 1=발견, 2=라운지, 3=채팅, 4=마이페이지. `CHATS`·채팅방 ID 없음 → 3, `LOUNGE_FEED` → 2, `HOME`(모임 신청 등) → 0, `CHAT_ROOM`/상세 등 HOME이 아닌 경로는 탭 미설정
+
+---
+
+## 10. Phase 2 완료 체크리스트
+
+- [x] MemberHomeGate
+- [x] MemberHomeGate, **5탭**(홈/발견/라운지/채팅/마이페이지) — **Phase D2** (`MemberBottomNavBar`, `DiscoveryTabContent`)
+- [x] 푸시→멤버 홈 **하단 탭** 연동 — **Phase D3** (`Route.MemberHomeSavedState`, `DeepLinkViewModel`, `DeepLinkBinder`, `MemberHomeScreen`)
+- [x] Phase D **룰·스코프 문서** 정합(멤버 하단 0~4 vs 호스트 서랍 4메뉴, phase9 인덱스) — **Phase D4**
+- [x] 모임 상세·검색·찜·추천·내 예약·티켓·리뷰
+- [x] 라운지(피드)·글쓰기
+- [x] 채팅 목록·채팅방
+- [x] 마이페이지·프로필·설정·문의
+- [x] 호스트 온보딩
+- [x] 호스트 홈 서랍 4메뉴(홈/관리/통계/정산)
+- [x] 모임 만들기 10단계·드래프트
+- [x] 모임 관리·예약자 목록·입장 확인(번호·QR)
+- [x] 내 모임 리뷰·호스트 모임 허브 채팅 + ChatMyGathering(하단 채팅 탭 제거, `host_2_manage` 통합)
+- [x] Google Map Picker
+- [x] ProfileView, VerticalCardMore
+- [x] 관리자 대시보드·배너 관리
+- [x] 호스트 IA Phase 0 기준 고정 (`docs/dev-records/kotlin/20260408-host-ia-phase0-baseline.md`, §7a)
+- [x] 호스트 IA Phase 1 홈 탭 재구성·리뷰 제거 (`docs/dev-records/kotlin/20260408-host-ia-phase1-home-tab.md`)
+
+---
+
+## 11. 한 줄 요약
+
+> Phase 2: 멤버 홈·발견·라운지·채팅·마이페이지(`member_1_home`~`member_5_mypage`), 호스트 온보딩·홈·모임·예약·입장·리뷰·정산·통계 탭·모임 허브 채팅(ChatMyGathering), 관리자·푸시·딥링크. Phase D: D2 5탭·발견, D3 푸시 탭, D4 룰·스코프 최종 정합.

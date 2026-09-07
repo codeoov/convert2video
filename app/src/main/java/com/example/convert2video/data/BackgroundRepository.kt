@@ -2,15 +2,21 @@ package com.example.convert2video.data
 
 import android.content.Context
 import android.net.Uri
+import com.example.convert2video.utils.AppLogger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
+private const val TAG = "BackgroundRepository"
+
 class BackgroundRepository(
     private val context: Context,
     private val dao: BackgroundDao,
+    private val settingsRepository: SettingsRepository = SettingsRepository(context),
 ) {
     val backgrounds: Flow<List<BackgroundImage>> = dao.observeAll()
 
@@ -31,6 +37,17 @@ class BackgroundRepository(
     suspend fun deleteBackground(background: BackgroundImage) {
         dao.deleteById(background.id)
         withContext(Dispatchers.IO) { File(background.filePath).delete() }
+        val lastUsed = try {
+            settingsRepository.lastUsedBackgroundPath.first()
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "Failed to read lastUsedBackgroundPath on delete: ${e.javaClass.simpleName}")
+            null
+        }
+        if (lastUsed != null && lastUsed == background.filePath) {
+            settingsRepository.clearLastUsedBackgroundPathCatching()
+        }
     }
 
     companion object {

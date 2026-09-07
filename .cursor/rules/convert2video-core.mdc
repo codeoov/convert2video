@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+
+> 전체 내용은 단일 소스 [`CLAUDE.md`](../../CLAUDE.md) § Core Conventions 참고.
+> 이 파일은 Cursor 규칙 엔진과 Harness 번들러가 자동 로드하기 위한 포인터입니다.
+
+@../../CLAUDE.md

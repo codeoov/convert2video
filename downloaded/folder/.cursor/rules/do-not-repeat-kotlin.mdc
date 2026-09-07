@@ -1,0 +1,315 @@
+---
+description: >
+  happy_v12 Kotlin 상세 재발방지: Route.kt 단일 소스·하드코딩 금지, ApiConfig/base URL·Gradle 카탈로그,
+  5_pages Scaffold 템플릿·AppSpacing/AppSizes·로딩·테마, ErrorDisplayHelper·Repository Result 패턴,
+  l10n(stringResource 위치)·Retrofit Request DTO·용어 glossary. 네비/API/UI/Gradle 수정·중복 패턴 방지·
+  do-not-repeat·단일 소스·Snackbar·검색 배너·딥링크 작업 시 적용.
+alwaysApply: false
+globs:
+  - "**/*.kt"
+  - "**/*.kts"
+---
+
+# 재발 방지 규칙 (Kotlin) — happy_v12
+
+> **.kt/.kts 파일 작업 시 자동 로드**. 라우트·l10n·단일 소스·기능별 패턴 전체. 요약은 `happy-core-kotlin.mdc` §7, 목차는 `rules-index-kotlin.mdc`.
+
+## 1. 라우팅·네비게이션
+
+- **단일 소스**: NavController, NavHost에서 라우트 정의. 경로 상수는 한 곳에만.
+- **경로 문자열**: `config/Route.kt`의 `Route.XXX` 상수 사용. 하드코딩 금지.
+- **Route 상수 범위**: NavHost의 composable 또는 navigate()에서 실제로 사용하는 경로만 정의. 사용처가 없는 상수는 두지 않는다. (탭 전용 화면·통합된 플로우는 단독 라우트가 아니므로 예: CHATS, MY_PAGE, HOST_SETTLEMENT, SIGNUP_NAME 등은 Route에 두지 않음.)
+
+## 1.1 View 계층 함수 금지 (non-Composable fun)
+
+- **금지**: `1_atoms` ~ `5_pages` 파일 안에서 `@Composable` · `@Preview` 없는 `fun` 정의.
+  - DTO extension: `private fun GatheringDto.resolveXxx()` 형태 포함.
+  - 데이터 변환·포맷팅·URL 빌드·값 비교·ID 생성·더미 데이터 생성 로직.
+- **허용 예외**: `5_pages` Screen 파일의 `toXxxScreenState()` (ViewModel UiState → *ScreenState 매핑 한정).
+- **대신 두는 곳 (빠른 참조)**:
+
+| 로직 유형 | 이동 대상 |
+|-----------|-----------|
+| 날짜·금액·문자열 포맷팅 | `utils/DateUtils`, `utils/AmountFormatUtils`, 신규 util |
+| 외부 URL 빌드 (구글맵 등) | `helpers/ExternalUrlOpenHelper` 또는 신규 util |
+| DTO 필드 파싱·변환 | `data/dto/` extension 또는 domain 레이어 |
+| 데이터 비교·값 정규화 | ViewModel 또는 domain usecase |
+| ID 생성·키 조합 | ViewModel 또는 domain 레이어 |
+| 리소스 ID 매핑 (category → resId 등) | ViewModel 또는 `config/` 상수 |
+
+## 2. 설정·앱 메타
+
+- **의존성 버전 카탈로그**: `gradle/libs.versions.toml` 사용. 신규 의존성은 [versions] + [libraries]에 추가. `app/build.gradle.kts`에서 `libs.xxx` 참조. 하드코딩 금지.
+- **앱 표시 이름**: BuildConfig 또는 Config 객체에서 단일 소스.
+- **API Base URL**: BuildConfig(build.gradle.kts)에서 정의. debug=defaultConfig, release=buildTypes.release. gradle.properties `API_BASE_URL`로 release 오버라이드. 앱 코드에서는 **ApiConfig.baseUrl**만 사용, BuildConfig.API_BASE_URL 직접 참조 금지.
+- **Cleartext(HTTP) 허용**: Debug 빌드에서만 허용. `src/debug/AndroidManifest.xml`·`src/debug/res/xml/network_security_config.xml` 에만 usesCleartextTraffic·networkSecurityConfig 설정. 메인 매니페스트·메인 res에는 cleartext 관련 설정 두지 않음. Release는 HTTPS만 사용.
+- **호스트 이용약관 URL**: ApiConfig.hostTermsUrl. 빈 문자열이면 "준비 중" 안내. 서비스 시 URL 설정.
+- **OneSignal App ID**: BuildConfig.ONE_SIGNAL_APP_ID. 빈 문자열이면 푸시 초기화 생략.
+- **OneSignal SDK 버전**: 고정 버전 사용 (libs.versions.toml onesignal). [5.6.1, 5.6.99] 등 동적 범위 금지. 빌드 재현성 강화.
+- **Google Maps API 키**: BuildConfig.GOOGLE_MAPS_API_KEY, gradle.properties. 빈 문자열이면 Places 초기화·지도 비활성화.
+- **앱 테마 (상단바)**: `res/values/themes.xml` 부모는 `Theme.MaterialComponents.DayNight.NoActionBar` 사용. DarkActionBar 사용 금지. 상단바가 필요한 화면은 Compose `Scaffold(topBar = { TopAppBar(...) })` 로 구현.
+- **5_pages 템플릿 사용**: `ui/views/5_pages/` 내 Screen에서는 `Scaffold` 직접 사용 금지. `ScaffoldTemplate`, `FormTemplate`, `ScaffoldWithBottomNavTemplate`, `CenteredContentTemplate`, `AuthStepScaffold` 등 템플릿 사용. (Phase 6 통일)
+
+## 3. 색상
+
+- **Theme만 사용**: `MaterialTheme.colorScheme`. 직접 Color 하드코딩 금지.
+- **의미 색**: primary, error, surface 등 Theme 통해 접근.
+- **화면별 고정 색**: 채팅방·프로필 편집 등은 Theme 확장(ChatRoomColors, ProfileEditColors) via `LocalChatRoomColors.current`, `LocalProfileEditColors.current` 사용. AppColors는 Theme 정의 전용, UI 직접 참조 금지.
+
+## 3.1 여백·크기
+
+- **AppSpacing, AppSizes 사용**: 여백·크기·패딩은 `ui/theme/AppSpacing`, `AppSizes` 상수 사용.
+- **직접 숫자 금지**: `Modifier.height(16.dp)` 대신 `Modifier.height(AppSpacing.md.dp)` 등. `20.dp`, `8.dp`, `24.dp`, `120.dp`, `100.dp` 등 직접 사용 금지.
+
+### AppSpacing 산술 금지
+
+`AppSpacing` 이름을 쓰더라도 **인라인 덧셈·뺄셈으로 간격을 만들지 않는다.** “토큰을 썼으니 안전하다”로 보지 않는다.
+
+- ❌ `.padding(horizontal = (AppSpacing.lg - AppSpacing.md).dp)`
+- ❌ `.size(width = (AppSpacing.xl + AppSpacing.sm).dp)` 등 `AppSpacing`끼리 `+` / `-` 한 결과를 `.dp`에 넣는 패턴 전부
+- ✅ `.padding(horizontal = AppSpacing.sm.dp)` — 계산 결과가 기존 상수와 같으면 **그 상수 하나**만 사용
+- ✅ `.padding(horizontal = AppSpacing.cardInner.dp)` 등 — 기존에 없는 간격이 필요하면 **`AppSpacing.kt`에 의미 있는 이름을 추가**한 뒤 그 이름만 참조
+
+**판단:** 결과 값이 이미 정의된 토큰과 같으면 치환한다. 없으면 새 토큰을 추가하고, 산술식은 남기지 않는다. (`atomic-design-kotlin.mdc` §6 동일 원칙.)
+
+- **dp 확장 import**: Compose에서 `AppSpacing.xx.dp`, `AppSizes.xx.dp`를 쓰는 파일은 `import androidx.compose.ui.unit.dp` 필요. 누락 시 Unresolved reference: dp 컴파일 오류.
+- **리스트 카드·하단 네비**: 리스트 카드 모서리는 `AppSizes.listCardBorderRadius`(10.dp). 하단 네비게이션 바 최소 높이는 `AppSizes.bottomNavBarMinHeight`(72.dp). 10.dp, 72.dp 직접 사용 금지.
+
+## 3.2 화면 스케일 (ScreenScale)
+
+- **위치**: `ui/theme/ScreenScale.kt`. Phase 7-4, v11 flutter_screenutil 대응.
+- **적용**: HappyV12Theme 내부 ScreenScaleProvider가 LocalDensity(ScaledDensity) 제공. `AppSpacing.md.dp`, `AppSizes.xxx.dp` 등 기존 .dp 사용은 자동 스케일됨.
+- **디자인 기준**: DesignSize.WIDTH(375), DesignSize.HEIGHT(812). 변경 시 ScreenScaleProvider 기본값 수정.
+- **수동 스케일**: 가로/세로 별도 비율 필요 시 `scaleW(base)`, `scaleH(base)` 사용. base는 디자인 기준값(Float).
+- **폰트**: minTextAdapt 대체로 fontScale 하한 0.85, 상한 1.15 적용.
+- **디버그**: DEBUG 빌드에서 ScreenScaleDebugBanner로 scaleW, scaleH, 화면 크기 확인 가능.
+
+## 4. API 통신
+
+- **타임아웃**: 모든 HTTP 요청에 설정.
+- **에러 처리**: try-catch, 응답 검증 필수.
+- **세션 토큰**: Authorization: Bearer 헤더 (클라이언트 표준, Phase 4). 인증 필요 API에 필수. 백엔드는 Bearer 우선, 구규격(X-Session-Token 등) 병행 허용.
+
+## 4.1 에러 표시 (ErrorDisplayHelper)
+
+- **위치**: `helpers/ErrorDisplayHelper.kt`
+- **개발(DEBUG)**: 상세 에러·스택트레이스 노출 (시각적 피드백).
+- **운영(RELEASE)**: `stringResource`로 사용자 친화적 Fallback 메시지만 노출.
+- **사용**: `ErrorDisplayHelper.toDisplay(throwable)` → `ErrorDisplay.Dev` / `ErrorDisplay.Prod`.
+- **UI(Composable)**: Prod는 `stringResource(display.stringResId)`로 표시.
+- **ViewModel(Snackbar)**: `context.getString(display.stringResId)` 사용. Dev는 `display.message` 그대로 전달.
+- **ViewModel 간편 패턴**: `toDisplayMessage(context, throwable, fallbackResId)` — Snackbar용 문자열 직접 반환. `handleCooldownOrError(e, context, cooldownResId, errorResId)` — CooldownException 시 (메시지, retryAfterSeconds) 반환. OTP·인증 링크 재발송 등 429 쿨다운 처리 통일.
+
+## 4.2 Result 반환·크래시 방지 (재발 방지)
+
+- **Repository 반환 타입이 Result\<T\>인 경우**: 실패 시 **반드시 Result.failure(...)로 반환**. `.recover { throw translateException(...) }` 처럼 `recover` 안에서 다시 throw 금지. 호출부(ViewModel)는 Result만 보고 처리하므로, throw가 나가면 처리되지 않은 예외로 앱 크래시 발생.
+- **권장 패턴**: `runCatching { ... }.fold(onSuccess = { Result.success(it) }, onFailure = { Result.failure(translateException(it, context)) })` 또는 실패 시 null/Result 반환 후 호출부에서 Result.failure로 래핑.
+- **ViewModel·컨트롤러(세션/인증 등 크리티컬 플로우)**: 세션 복구(verifySession), 웰컴 체크(performWelcomeCheck), 로그인 등 **앱 진입/복구 경로**에서 Repository 호출 시 (1) Result.fold(onFailure = ...)로 실패 처리하고 (2) **예외가 새로 나오지 않도록** 필요 시 `try { ... } catch (e: Exception) { ... }` 로 한 번 더 방어. catch에서 로그 남기고 재시도·로그인 화면 유도 등으로 처리하고, 예외를 다시 던지지 않음.
+- **검사**: Repository에서 `Result<*>` 반환 함수 내 `.recover { throw` 패턴 사용 금지. ViewModel에서 세션/인증 관련 suspend 호출이 try-catch 없이 Result만 의존할 경우, 예외 전파 가능성이 있으면 catch 추가.
+
+## 5. DB·API 필드 매핑
+
+- **Kotlin**: camelCase (gatheringId, sessionToken)
+- **API/DB**: snake_case (gathering_id, session_token)
+- **매핑**: Gson @SerializedName 또는 Moshi 사용.
+
+## 5.2 Retrofit API 요청 body (Request DTO)
+
+- **전용 DTO 사용**: Retrofit API의 `@Body` 파라미터는 `Map<String, Any>` 대신 요청별 Request DTO(data class) 사용. 타입 안전성·유지보수·Retrofit 리플렉션 와일드카드 이슈 회피.
+- **위치**: `data/dto/` 하위 도메인 폴더(예: `data/dto/chat/`). 파일명 예: `GetChatListRequest.kt`, `SendMessageRequest.kt`.
+- **필드**: action, API별 필드. snake_case 전송은 `@SerializedName` 사용. 선택 필드는 nullable.
+- **용어 등록**: 신규 Request DTO는 terminology-glossary.mdc에 등록. 20260314-message-api-request-dto-phase-record.md 참고.
+
+## 5.3 파일 공유 (FileProvider)
+
+- **앱 내부 파일 외부 앱으로 열기**: `androidx.core.content.FileProvider` 사용.
+- **권한 정의**: `res/xml/file_paths.xml`에 cache-path 등 정의.
+- **AndroidManifest**: provider 등록, `android:authorities="${applicationId}.fileprovider"`.
+
+## 6. 다국어 (l10n)
+
+- **strings.xml**: `values/` (기본 en), `values-ko/` (한국어).
+- **Compose**: `stringResource(R.string.xxx)` 사용. 하드코딩 문자열 금지.
+- **stringResource 호출 위치**: `LaunchedEffect`, `rememberCoroutineScope.launch` 등 비-Composable 콜백 내부에서는 호출 금지. Composable 본문에서 미리 `val msg = stringResource(R.string.xxx)`로 가져와 사용.
+- **semantics / contentDescription**: `Modifier.semantics { }` 람다는 Composable 스코프가 아니므로 그 안에서 `stringResource` 호출 금지. Composable 본문에서 `val desc = stringResource(...)`로 계산한 뒤 `semantics { contentDescription = desc }`처럼 값만 할당.
+- **R import**: `stringResource(R.string.xxx)` 사용 시 `import com.example.happy_v12.R` 필요.
+- **ViewModel**: 사용자 메시지는 `@ApplicationContext Context` + `context.getString(R.string.xxx)` 사용. 하드코딩 금지.
+- **Repository**: 사용자 노출 에러 메시지 반환 시 `context.getString(R.string.xxx)` 사용. 하드코딩 금지. (예: StorageRepository 업로드·파일 열기 실패)
+- **앱 표시 이름**: `@string/app_name` (manifest).
+- **탭·필터·리스트 옵션**: label 문자열 하드코딩 금지. `(value, R.string.xxx)` 또는 `(code, R.string.xxx)` 형태로 리소스 ID를 저장하고, Composable 내부에서 `stringResource(labelResId)`로 표시.
+- **검증 에러 메시지**: Validators 등 utils에서 사용자 노출 문자열 반환 시 하드코딩 금지. `errorResId: Int?` 반환 후 호출자(ViewModel/Composable)에서 `context.getString(resId)` 또는 `stringResource(resId)` 사용.
+
+## 6.1 Compose Import 충돌
+
+- **Modifier 충돌 시**: `import androidx.compose.ui.Modifier`가 ambiguous할 경우, 완전한 경로 `androidx.compose.ui.Modifier`로 사용.
+
+## 6.2 Snackbar 에러 피드백
+
+- **비동기 작업 에러 표시**: ViewModel은 `onResult: (Boolean, String?) -> Unit` 콜백으로 에러 메시지 전달.
+- **UI**: `SnackbarHostState` + `rememberCoroutineScope().launch { snackbarHostState.showSnackbar(errorMsg) }`로 Snackbar 표시.
+- **에러 메시지**: ViewModel에서 `context.getString(R.string.xxx)` 사용. 콜백 내부에서 stringResource 호출 금지.
+
+## 6.2a 탭 콘텐츠 Snackbar 피드백
+
+- **패턴**: 부모 Scaffold의 snackbarHostState를 파라미터로 받아 에러/성공 피드백 표시.
+- **적용**: Member4ChatsPage, Member5MyPagePage 등 Snackbar가 필요한 탭 콘텐츠.
+- **비동기 실패 시**: 콜백 내부에서 `scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.xxx)) }` 호출. stringResource 호출 금지 (§6).
+
+## 6.2b 준비 중 버튼 피드백 (Placeholder)
+
+- **패턴**: 미구현 기능 버튼 클릭 시 "준비 중" Snackbar 표시.
+- **적용**: ManageMyGatheringScreen 상품·사진·프로모션 등 API·화면 미구현 버튼.
+- **문자열**: `R.string.common_tab_placeholder` 사용. 하드코딩 금지.
+- **콜백 내부**: `scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.common_tab_placeholder)) }`. stringResource 호출 금지 (§6).
+
+## 6.2c 상단 ScrollableTabRow (탭 바)
+
+- **직접 구현 금지**: `MemberHomeScreen` 등 `5_pages`에서 `ScrollableTabRow` + `Tab`을 인라인으로 반복 작성 금지.
+- **단일 소스 (표준 탭)**: `2_molecules/navigation/ScrollableResourceTabRowMolecule` — `tabLabelResIds` + `selectedTabIndex` + `onTabSelected`. `edgePadding`은 molecule 내부 `AppSpacing.md.dp` 고정.
+- **라운지 피드 필터(칩 스타일)**: `ScrollableChipFilterTabRowMolecule` 단일 소스.
+- **탭 개수(현행)**: 홈 상단 **3탭** — `home_tab_recommended` / `home_tab_popular` / `home_tab_new`(추천·인기·신규모임). **별도 Nav Route가 아니라** `HomeTabViewModel` 스크롤 섹션 연동용 인덱스 0~2. 라운지 1행 **2탭**, 필터 **5탭**, 마이페이지 상단 **5탭**은 각 화면에서 `tabLabelResIds` 리스트 길이로 유지·검증.
+- **용어**: terminology-glossary `scrollable resource tab row molecule`, `lounge filter tab row molecule`.
+
+## 6.3 런타임 권한 요청
+
+- **패턴**: `rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission())` 사용.
+- **콜백 내부**: stringResource 호출 금지. `context.getString(R.string.xxx)`로 메시지 조회.
+- **권한 거부 시**: SnackbarHostState로 안내 메시지 표시.
+
+## 6.4 Google Map Picker (장소 선택)
+
+- **Places SDK**: HappyApplication에서 `Places.initializeWithNewPlacesApiEnabled()` 초기화. kotlinx-coroutines-play-services로 `Task.await()`.
+- **검색 바이어스**: FusedLocationProviderClient.getLastLocation()으로 사용자 위치 조회 후 CircularBounds. 없으면 기본 좌표(Jakarta).
+- **지오코딩**: `utils/GeocodingUtils.kt` (forwardGeocode, reverseGeocode). Screen에서 직접 Geocoder 호출 금지.
+- **Nav 쿼리 파라미터**: `"${Route.XXX}?param={param}"` + navArgument defaultValue. navigate 시 `utils/RouteArgsCodec.encode()` 사용. decode는 navArgument에서.
+
+## 6.5 디바이스 기능 에러 (카메라, ML Kit, 권한 등)
+
+- **API/네트워크 에러**: ErrorDisplayHelper 사용 (§4.1).
+- **카메라, ML Kit, 권한 등 디바이스 에러**: `context.getString(R.string.xxx)`로 전용 문자열 사용. ErrorDisplayHelper 사용 금지.
+- **콜백 내부**: stringResource 호출 금지. Composable 콜백(onCameraError, onScanError 등)에서 context는 LocalContext.current 또는 파라미터로 전달.
+
+## 6.5a 갤러리·이미지 선택 (Helpers)
+
+- **권한**: PermissionHelper.rememberPhotoLibraryLauncher 사용. 갤러리 열기 직전 권한 확인.
+- **단일 이미지**: ImageFromGalleryHelper.rememberImageFromGalleryLauncher (권한 + GetContent).
+- **다중 이미지**: MultiImageFromGalleryHelper.rememberMultiImageFromGalleryLauncher (권한 + GetMultipleContents, maxCount).
+- **이미지 크롭**: PickImageCropHelper.rememberPickAndCropImageLauncher (권한 + GetContent + CropImageContract). 프로필·커버·리뷰 사진 등.
+- **권한 거부 시**: onPermissionDenied 콜백에서 `context.getString(R.string.image_from_gallery_permission_denied)` + SnackbarHostState. stringResource 호출 금지 (§6).
+- **의존성**: com.vanniktech:android-image-cropper (PickImageCropHelper). AndroidManifest: READ_MEDIA_IMAGES, READ_EXTERNAL_STORAGE(maxSdkVersion 32).
+
+## 6.6 QR 스캔·입장 확인
+
+- **QR 이미지 URL**: `utils/QrCodeUtils.buildQrImageUrl(verifyUrl)` 사용. api.qrserver.com URL 직접 조립 금지.
+- **크기 상수**: AppSizes.qrViewfinderSize, qrViewfinderBorderWidth, cardBorderRadius, qrCodeSize 사용. 직접 dp 금지 (§3.1).
+- **QrCodeImage molecule** (`2_molecules/displays/QrCodeImage.kt`): 배경색 기본값 `MaterialTheme.colorScheme.surface`, 크기 기본값 `AppSizes.qrCodeSize.toFloat().dp`. Color.White, 200.dp 직접 사용 금지 (§3, §3.1).
+- **진동 피드백**: utils/HapticUtils.vibrateSuccess(context) 사용. 스캔 성공 시 짧은 진동.
+- **권한 재확인**: ON_RESUME 시 CAMERA 권한 재확인. 설정 화면 유도(권한 거부 시) 지원.
+
+## 6.7 사용자 프로필 진입점 (onUserClick)
+
+- **패턴**: 사용자 아바타·이름 Row 탭 시 프로필 보기 화면으로 이동.
+- **파라미터**: `onUserClick: ((Int) -> Unit)? = null` — userId 전달.
+- **조건**: `feed.userId != null && feed.userId > 0 && onUserClick != null`일 때만 `Modifier.clickable { onUserClick.invoke(feed.userId) }` 적용.
+- **네비게이션**: `"${Route.PROFILE_VIEW}/$userId"` 사용. Route.PROFILE_VIEW 단일 소스 (§1).
+
+## 6.8 알림 권한 요청 (OneSignal)
+
+- **위치**: `handlers/PushTokenSender.kt`
+- **호출 시점**: 로그인/세션 복원 직후. `sendTokenAfterLogin()` 내부에서 `requestNotificationPermission()` → `sendTokenIfNeeded(force = true)` 순서.
+- **API**: `OneSignal.Notifications.requestPermission(false)` (false = OneSignal 내부 다이얼로그 비표시, 시스템 권한만 요청).
+- **스레드**: `Dispatchers.Main`에서 호출 (권한 다이얼로그는 메인 스레드 필요).
+- **에러 처리**: runCatching 사용. 실패 시 로그만 남기고 앱 진행. 사용자에게 별도 표시 없음.
+
+## 6.9 로딩 인디케이터 (AppLoadingIndicator)
+
+- **단일 소스**: 로딩 표시는 `2_molecules/feedback/AppLoadingIndicatorMolecule`만 사용. 호출부에서 `import …AppLoadingIndicatorMolecule as AppLoadingIndicator` 로 기존 이름을 유지해도 된다. `CircularProgressIndicator`는 1_atoms(CircularProgressAtom) 내부 구현에만 쓰고, pages/organisms에서는 직접 사용 금지.
+- **위치**: `ui/views/2_molecules/feedback/AppLoadingIndicatorMolecule.kt`.
+- **전체 화면·인라인 로딩**: `AppLoadingIndicator()` 또는 `AppLoadingIndicator(modifier = Modifier.padding(...))`.
+- **버튼 내부 로딩**: `AppLoadingIndicator(size = AppSizes.iconMedium.dp, color = MaterialTheme.colorScheme.onPrimary)`.
+- **TextButton·작은 인디케이터**: `AppLoadingIndicator(size = AppSizes.iconIndicator.dp)` 또는 `AppSizes.loadingIndicatorSmall.dp`.
+- **트레일링 아이콘(검색 등)**: `AppLoadingIndicator(modifier = Modifier.padding(AppSpacing.sm.dp))`.
+- **크기·색상**: AppSizes, MaterialTheme.colorScheme 사용 (§3, §3.1). 직접 dp·Color 금지.
+
+## 6.10 API action·상태·limit 상수 (Magic Value 상수화)
+
+- **API action 문자열**: `config/ApiActions.kt` 상수 사용. `"get_gathering"`, `"list_feeds"` 등 하드코딩 금지.
+- **도메인 상태값**: `config/DomainStatus.kt` 사용. User/Booking/Payment/Message 등 `"confirmed"`, `"active"` 문자열 직접 비교 금지.
+- **목록 limit·타임아웃·delay**: `config/DomainLimits.kt`, `config/ApiPaging.kt`, `config/ApiTimeouts.kt` 사용. `50`, `100`, `20` 등 magic number 직접 사용 금지.
+- **채팅·딥링크 타입**: `config/ChatConstants.kt` (PushType, DeepLinkHost 등) 사용.
+- **상수 정의 위치**: Kotlin `config/`, PHP `htdocs/config/constants/`. 신규 상수는 terminology-glossary 등록.
+
+## 6.11 모임 검색 제출 허용 조건
+
+- **단일 소스**: 키워드 공백 + 필터 전부 없음일 때 검색 API를 막는 규칙은 `utils/GatheringSearchPolicy.hasKeywordOrFilter`만 사용. `GatheringSearchViewModel`은 위임. 동일 조건을 화면·Repository에 하드코딩 금지.
+
+## 6.11a 모임 검색 입력 필드(캡슐) 단일 소스
+
+- **편집 가능한 검색창**: `Route.GATHERING_SEARCH` 플로우의 캡슐형 입력은 `2_molecules/forms/SearchBarMolecule`이 본체. 앱바·랜딩에서 쓰는 shape·compact·surface 배경·a11y 아이콘 설명은 `2_molecules/search/GatheringSearchBarDefaults`만 단일 소스로 두고, 래퍼는 `GatheringSearchTopBarMolecule`·`GatheringLandingSearchFieldMolecule`만 사용. 동일 화면에서 `SearchBarMolecule`에 다른 조합을 임의로 넣지 않는다(예외는 PR에 사유).
+- **발견 탭**: 풀스크린 검색 UI는 `3_organisms/member_2_discovery/search` 등으로 복제하지 않고 `Route.GATHERING_SEARCH`로 진입만 한다. **멤버 홈 탭 0·1** 앱바 `title`은 지역/브라우즈 선택(`TextButton`+`Text4`, `HomeBrowseRegionLabels`); 검색은 `TopAppBar` `actions`의 검색 아이콘으로 `GATHERING_SEARCH` 진입. `HomeSearchBarMolecule` 등 검색 캡슐은 **검색 플로·발견 맥락**에서 사용(홈 타이틀 고정 캡슐은 현행 아님).
+
+## 6.12 모임 검색·홈 배너 탭
+
+- **단일 소스**: 배너 탭 해석은 `utils/link/BannerLinkTapUtils.resolve`만 사용. `gathering` → 모임 ID, `url` → `link_value`가 http/https·호스트 있을 때만 `OpenExternalUrl`. 그 외·파싱 실패는 `None`. UI에서 중복 분기 금지.
+- **브라우저 열기**: `helpers/ExternalUrlOpenHelper.tryOpenHttpOrHttpsUrl`만 사용. 실패 시 Snackbar 등은 화면에서 `banner_link_open_failed`.
+
+## 7. 경로·패키지
+
+- **Route**: `config/Route.kt` 단일 소스.
+- **멤버·모임 navigate 문자열**: `navigation/MemberNavDestinations.kt` — 홈(`home`)·위시·알림·라운지 글쓰기·내 예약·추천·프로필 편집·개인정보·국가/지역 설정 및 모임 상세·검색(major)·세로 더보기·피드·예약·후기·유형별 목록 등. **호스트**: `navigation/HostNavDestinations.kt` — 온보딩·호스트 홈·모임 만들기·후기·스캔·정산 상세·관리/예약/지도/입장 확인 등. **관리자 진입**: `navigation/AdminNavDestinations.kt`. **인증(begin) 고정 라우트**: `AuthDestinations`의 `welcome`·`emailLogin`·`signupReferral`·`restoreRequest` 등 + 기존 encode 조합. 채팅은 `ChatDestinations`.
+- **네비게이션**: `navigation/` — AppNavHost, AuthNavGraph, MemberNavGraph, HostNavGraph, CommonNavGraph, DeepLinkBinder. HappyApp.kt는 AppNavHost + DeepLinkBinder만 구성.
+- **Route 인자 인코딩**: `utils/RouteArgsCodec.kt` (encode/decode). URL 파라미터·경로 세그먼트 인코딩 단일 소스.
+- **인증·확인 동사**: Route, API, 함수명에서 Verify/Confirm/Check 사용 시 `terminology-glossary.mdc` §5a 준수. Verification(인증 대기 화면 등)과 Verify(토큰 검증) 구분도 §5a 참고.
+- **에러 표시**: `helpers/ErrorDisplayHelper.kt`.
+- **도메인 모델**: `domain/model/` 또는 core:model — SimpleActionResult, GeoPoint, StorageUploadResult, ApiResponseBody 등. Repository 결과·공통 도메인 타입.
+- **외부 라이브러리 래핑**: `domain/contracts/` (ApiClient, JsonCodec, HttpDownloadClient, MultipartUploadClient, HttpInterceptor, HttpPostClient, WrapperError 등), `data/adapters/` (구현체). controllers/repository/handlers 등에서는 contracts만 참조, retrofit/okhttp/gson 직접 import 금지. 예외: data/remote(Retrofit API), data/dto(SerializedName), di(NetworkModule). Repository에서 retrofit2.Response 직접 사용 금지 — ApiResponseBody(core/model)·toApiResponseBody(data/adapters) 사용.
+- **금지 import 검사 (래핑)**: `scripts/check-forbidden-imports.ps1`. `.github/workflows/check-forbidden-imports.yml` — push/PR 시 main, develop에서 자동 실행.
+- **organisms**: `ui/views/3_organisms/` — 도메인별: `begin/`(`common/…`, `google/…`, `email/…`, `welcome/begin_welcome_1_hub` 등), 인증 화면은 `4_templates/begin/…`·`5_pages/begin/…`와 조립, member_1_home, member_2_discovery, member_3_lounge, member_4_chats, member_5_mypage, host_0_onboarding, host_1_home(`create_gathering/` 모임 만들기 유기체), host_sidebar(호스트 서랍 전용 독립 도메인), host_2_manage, host_3_stats, host_4_settlement, admin_1_home, common (PlaceholderTabContentOrganism, SkeletonCardOrganism, NavTabItem, `common/chats/` 채팅방 본문·방정보 유기체 포함). **멤버 폴더 순서·`my_page` vs `mypage`** 는 `structure-kotlin.mdc` §1.5 Phase D 표.
+- **홈 가로 추천/인기 섹션**: `3_organisms/member_1_home/HorizontalCardListOrganism.kt` + `3_organisms/scaffolds/HorizontalCardListSectionScaffold.kt` — 제목·부제·더보기(+아이콘)·`LazyRow` 카드. `FeaturedGatheringSectionOrganism` / `PopularGatheringSectionOrganism`에서 위임. `4_templates/member_1_home/MemberHomeTemplate.kt`·`5_pages/member_1_home/Member1HomePage.kt`에서 조립. (구 `HomeTabContent.kt`·`HorizontalGatheringPagedSection.kt` 경로는 사용하지 않음.) terminology-glossary: 가로 스크롤 섹션.
+- **템플릿**: `ui/views/4_templates/` — 도메인별: `begin/shared/`(CenteredContentTemplate, BeginStepTemplate), `begin/{welcome,google,email,common}/begin_*_N_*`(인증·온보딩 단계), member_1_home/(ScaffoldTemplate), member_5_mypage/(MyPageTabTemplate, MyPageSettingsFormTemplate, MyPageTicketListTemplate, MyPageActionConfirmTemplate), host_3_stats/(HostStatsTabTemplate, HostStatsOverviewTemplate), common/(FormTemplate, ScaffoldWithBottomNavTemplate). member_2_discovery 등 나머지 멤버·호스트 도메인은 `structure-kotlin.mdc` 트리. 5_pages에서는 Scaffold 직접 사용 금지, 위 템플릿 사용 (§2).
+- **온보딩 공통 셸**: `5_pages/begin` 인증·회원가입 단계 화면은 `ui/views/3_organisms/scaffolds/AuthStepScaffold` 사용. 레이아웃은 Wrapper, 내용은 content 슬롯. FormTemplate은 다른 도메인(호스트 온보딩 등)용.
+- **푸시·딥링크**: `handlers/PushNotificationHandler.kt`, `handlers/PendingDeepLinkHolder.kt`.
+- **크래시 리포팅**: `handlers/CrashReportHandler.kt` (UncaughtExceptionHandler, CoroutineExceptionHandler, crash_api). HTTP 전송은 `domain/contracts/HttpPostClient` 경유, EntryPoint로 주입.
+- **로깅**: `utils/AppLogger.kt` (Kotlin), `htdocs/utils/Logger.php` (PHP). 직접 Log.d/Log.e, error_log 호출 금지.
+- **로깅 금지 패턴 검사**: `scripts/check-logging-forbidden.ps1` (Windows), `scripts/check-logging-forbidden.sh` (Bash, ripgrep 필요). `.github/workflows/check-logging.yml` — push/PR 시 main, develop에서 자동 실행. 로컬: `.\scripts\check-logging-forbidden.ps1`.
+- **용어 금지 패턴 검사**: `scripts/check-terminology-forbidden.ps1`. 런타임 코드에서 activity(모임)/meetup/reservation/my_info 등 금지 용어 검출. allowlist: androidx.activity, BuildConfig, 리소스 키 등.
+- **사람 용어 분리**: 전역 계정은 `user`(userId), 컨텍스트 참여자는 `participant`(chat/gathering participant)로 구분. 참여자 모델도 userId를 전역 연결 키로 유지. 상세: `terminology-glossary.mdc` §1.
+- **업로드 네이밍 분리**: Repository/Storage는 `uploadFrom*`(소스 타입 중심), ViewModel/UseCase는 `upload*Image`(도메인 의도 중심) 사용. 같은 계층에서 두 스타일 혼용 금지. 상세: `terminology-glossary.mdc` §5b.
+- **utils 하위 패키지 5줄 요약**
+- `utils/format`: 날짜·금액·텍스트 포맷팅 (`DateUtils`, `AmountFormatUtils`, `RichTextUtils`, `MessageStatusUtils`)
+- `utils/filter`: 목록 필터/정렬/검색 정책 (`GatheringListFilterUtils`, `ChatListSortUtils`, `GatheringSearchPolicy` 등)
+- `utils/validation`: 입력 검증/금지어 (`Validators`, `ProfileValidation`, `ForbiddenWords`)
+- `utils/ui`: Compose/UI 동작 보조 (`MemberHomeLazySectionLayout`, `HapticUtils`, `getGatheringStatusColor`)
+- `utils/link`: 링크 해석 정책 (`BannerLinkTapUtils`, `BannerTapResult`) / 나머지 범용 시스템 유틸은 `utils/` 최상위 유지
+
+- **신규 유틸 배치 결정 트리**
+- 화면 렌더/스크롤/햅틱/상태색 같은 UI 동작인가? -> `utils/ui`
+- 문자열·날짜·금액·리치텍스트를 "보여주기용"으로 바꾸는가? -> `utils/format`
+- 목록 정렬/필터/정책(검색 허용 조건 포함)인가? -> `utils/filter`
+- 입력값 유효성/금지어/검증 에러 반환인가? -> `utils/validation`
+- URL/딥링크/탭 링크 해석인가? -> `utils/link`, 그 외 앱 전역 공통(로깅/디바이스/이미지압축/QR/지오코딩)은 `utils/`
+
+- **대표 경로**: `utils/format/DateUtils.kt`, `utils/filter/GatheringSearchPolicy.kt`, `utils/validation/Validators.kt`, `utils/ui/MemberHomeLazySectionLayout.kt`, `utils/link/BannerLinkTapUtils.kt`, `helpers/ExternalUrlOpenHelper.kt`(배너 URL 열기).
+- **모임 목록 제목 필터(한강 런닝 등)**: `utils/GatheringListFilterUtils.filterExcludedGatherings` 단일 소스. ViewModel에 동일 로직 중복 금지.
+- **홈 featured/popular 데모·패딩·더보기 목록**: `controllers/member/home/MemberHomeGatheringDisplayUtils` 단일 소스. 가로 featured·popular는 동일 규칙(최대 9, DEBUG에서만 `sampleFeaturedHomeFallback` 보충). 세로 추천 빈 시 DEBUG `sampleRecommendedGatherings`, 신규는 최대 3·동일 fallback 보충. 더보기는 `featuredMorePageList`/`popularMorePageList`/`recommendedMorePageList` 등. 동일 로직을 화면·ViewModel에 중복 두지 않음.
+- **지오코딩·QR 이미지 URL**: `utils/GeocodingUtils.kt` (forwardGeocode, reverseGeocode), `utils/QrCodeUtils.kt` (buildQrImageUrl).
+- **API 응답 처리·DTO fallback**: `utils/ApiResponseUtils.kt` (translateThrowable, safeApiCall), `utils/DtoFallbackUtils.kt` (firstNonNull, firstNonBlank, intOr 등).
+- **테마 색상 확장**: `ui/theme/AppColors.kt`, `ChatRoomColors.kt`, `ProfileEditColors.kt`, `AppSemanticColors.kt`.
+- **화면 스케일**: `ui/theme/ScreenScale.kt` — ScreenScaleProvider, scaleW(), scaleH(), DesignSize, ScreenScaleDebugBanner.
+- **Admin 에러 변환**: `helpers/AdminErrorHelper.kt` — AdminErrorCodes → context.getString(R.string.admin_error_*).
+- **관리자 Repository (domain:admin)**: `domain/admin` 모듈에 AdminRepository 인터페이스(kotlin.Result 반환, status/period 등은 호출 측에서 .value 문자열 전달). app의 `data/repository/AdminRepository.kt`는 AdminRepositoryImpl로 구현·DTO→도메인 매핑(AdminDtoMappers). DI는 `di/AdminModule.kt`에서 `@Binds AdminRepository <- AdminRepositoryImpl`.
+- **API action·상태·limit 상수**: `config/ApiActions.kt`, `config/DomainStatus.kt`, `config/DomainLimits.kt`, `config/ChatConstants.kt`, `config/ApiPaging.kt`, `config/ApiTimeouts.kt` — Magic Value 상수화 (§6.10).
+- **로딩 인디케이터**: `ui/views/2_molecules/feedback/AppLoadingIndicatorMolecule.kt` — pages/organisms에서 CircularProgressIndicator 대신 사용 (§6.9).
+- **정산 상세 ViewModel 스코프**: 탭과 상세가 같은 ViewModel을 쓸 때, 상세 화면에서 `hiltViewModel(viewModelStoreOwner = navController.getBackStackEntry(부모_라우트))` 사용. 예: HostSettlementDetailScreen → `getBackStackEntry(Route.HOST_HOME)`.
+- **이메일·PDF 템플릿 토큰**: `htdocs/config/constants/design_tokens.php` — email_helpers.php, receipt_pdf_helper.php 색상·여백. #hex, padding/margin px 직접 사용 금지. terminology-glossary: email template tokens.
+- **Unit 테스트 Android 의존**: `testOptions { unitTests.isReturnDefaultValues = true }` — AppLogger 등 android.util.Log 호출 시 미모킹 예외 방지. `happy-core-kotlin.mdc` §테스트 참고.
+- **IDE 모듈 인식 오류 복구**: CLI 빌드 성공·코드 정상인데 IDE만 Unresolved reference(domain:auth, core:model 등) 또는 overrides nothing 연쇄 발생 시 Gradle JDK를 프로젝트와 동일(JDK 11, jvmTarget "11")로 설정. Package 검사·Compose unresolved 연쇄 시 `Project_Default.xml`의 PackageDirectoryMismatch 비활성화 참고.
+- **홈 탭 앱바 구조**: `MemberHomeScreen`의 `topBar`는 `Column { TopAppBar + ScrollableTabRow }` 패턴. ScrollableTabRow는 `selectedTab == 0`(홈 탭)일 때만 표시. 탭 선택 상태(`homeListTabIndex`)는 `HomeTabViewModel`에서 관리. `TopAppBar` 단독 사용 금지 — 홈 탭 하단 탭 바는 항상 함께 표시.
+- **HomeTabViewModel 공유**: `MemberHomeScreen`에서 `homeTabViewModel: HomeTabViewModel = hiltViewModel()` 한 번 호출 후, `Member1HomePage(viewModel = homeTabViewModel)`로 명시적 전달. 같은 NavBackStackEntry 내 두 Composable이 동일 ViewModel 인스턴스를 사용하는 경우 상위에서 한 번만 `hiltViewModel()` 호출 후 파라미터 전달.
+- **앱바 (홈 탭 0)**: `title`은 지역/브라우즈(위 §6.11a). `actions`는 검색 → 찜 → 알림(`MemberHomeTopBarActionsOrganism`). (과거 문서의 홈 타이틀 `HomeSearchBarMolecule` 단일 설명은 폐기.)
+- **FontWeight 직접 사용**: `FontWeight.ExtraBold` 등 Compose 내장 FontWeight는 직접 사용. `AppFontSizes`는 sp 크기 상수만 정의하며 FontWeight는 포함하지 않음.
+- **모임 카드 더미 이미지**: coverImageUrl이 null/blank일 때 표시할 플레이스홀더는 `R.drawable.gathering_placeholder_dummy` 단일 소스. `res/drawable/gathering_placeholder_dummy.xml`, `GatheringCardOrganism.kt`에서 Coil로 로드. terminology-glossary: 모임 카드 플레이스홀더.
+
+## 8. 한 줄 요약
+
+> 라우트 단일 소스, Theme로 색상, API 타임아웃·에러 처리 필수. l10n은 stringResource 사용. Repository는 Result 반환 시 throw 금지(§4.2), 세션/인증 플로우는 ViewModel에서 예외 방어.

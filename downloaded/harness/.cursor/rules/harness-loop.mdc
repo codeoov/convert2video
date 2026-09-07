@@ -1,0 +1,62 @@
+---
+description: "스프린트·루프·기획서 실행 요청 시 3각 협업(Task planner→generator↔evaluator) 필수. 상세 게이트는 sprint-harness-gate.mdc."
+globs: "*"
+alwaysApply: true
+---
+
+# AI 에이전트 3각 협업 규칙 (Harness Loop)
+
+**실행 체크리스트(메인 Write 금지·첫 응답 표)**: `sprint-harness-gate.mdc` — **본 문서와 함께 alwaysApply.** 충돌 시 게이트 파일이 우선.
+
+이 프로젝트에서 **스프린트·기능 구현·리팩터링** 요청이 오면, 메인 에이전트가 독단적으로 한 번에 코드를 짜지 마십시오. 작업 규모와 **무관**하게 Harness를 탑니다.
+
+유저가 `@기획서`와 **「스프린트 돌려라」「루프 시작」「실행해」** 또는 **`/sprint-run`** 을 쓰면, **즉시** 아래 3각 루프를 가동하십시오.
+
+**Goal (자율 종료)**: `/sprint-run` = `/goal` 대체. termination condition은 evaluator **Round 3+ PASS** + `HARNESS_CONTRACT_FILES` `npx tsc --noEmit` 무에러 + nginx/Next.js scope 클린. 충족 전까지 사용자 개입 없이 루프를 자율 실행한다.
+
+---
+
+## ⚠️ 자주 하는 오해 (금지)
+
+| 생략 가능 | 생략 불가 |
+|-----------|-----------|
+| `PLAN.md` 새로 작성 (기획서 이미 있을 때) | `Task(planner)` 범위 검증 |
+| planner가 장문 기획 확장 | `Task(generator)` 코드 수정 |
+| | `Task(evaluator)` tsc·checks·채점 |
+| | evaluator **`PASS`** 전 완료 선언 |
+
+**「기획서 있으니 바로 구현」= Harness 위반.**
+
+---
+
+## 🔄 실전 오케스트레이션 단계
+
+### [STEP 1 — 기획 및 스펙 (Gatekeeper)]
+
+- **`Task(subagent_type="explore", readonly=true, description="planner: ...")`** + prompt에 `.cursor/agents/planner.md` + **`plan-sprint-format.mdc`**
+- `@기획서`에 스프린트별 `수정`·`완료`·`검증`이 없으면 planner가 보완. **3요소 충족 전 generator 가동 금지.**
+
+### [STEP 2 — 스프린트 계약 (Contract)]
+
+- **`Task(generator)`** 와 **`Task(evaluator)`** 로 완료 기준 합의
+- 포함: 수정 파일, 스펙 bullet, `npx tsc --noEmit` + 아키텍처 체크 + 보안 체크 + **nginx/Next.js 에러** + 브라우저 URL
+
+### [STEP 3 — generator ↔ evaluator 루프]
+
+- **코드 수정**: `generator`만 (메인 `src/**` Write/Edit 금지)
+- **검증**: `evaluator`가 `npx tsc --noEmit`, **`run-harness-checks.sh`** (아키텍처·보안 + TypeScript + nginx)
+- **채점**: `.cursor/agents/evaluator.md` — Round 1–2 **FAIL**, Grill-me **5건+**, **Round 3+** 에만 **PASS**
+- FAIL → generator 수정 → 재검증, **최대 10회**
+
+---
+
+## 정기 감사 (Type D)
+
+새 도메인 `[Type M]` 마이그레이션 완료 직후, 또는 직전 `[Type D]` 감사로부터 5스프린트 이상 경과 시 `[Type D: AUDIT]` 스프린트(`run-dup-check.sh` 포함)를 권장한다.
+
+---
+
+## 진입점
+
+- 슬래시: **`/sprint-run`** → `.cursor/commands/sprint-run.md`
+- 기획서: `/Users/songwoosub/.claude/plans/block-*.md`

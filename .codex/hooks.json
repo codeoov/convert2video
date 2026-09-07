@@ -1,0 +1,81 @@
+{
+  "description": "convert2video Harness hooks (mirrors .cursor/hooks.json for Codex CLI)",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/harness-arm-on-prompt.ps1\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Agent|spawn_agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/harness-inject-rules.ps1\"",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/harness-block-main-write.ps1\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/harness-subagent-start.ps1\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/harness-subagent-stop.ps1\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/harness-stop-gate.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/run-stop-checks.ps1\"",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/run-stop-compile.ps1\"",
+            "timeout": 900
+          }
+        ]
+      }
+    ]
+  }
+}

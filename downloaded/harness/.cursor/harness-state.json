@@ -1,0 +1,10 @@
+{
+  "armed": true,
+  "prompt_snippet": "@b-witty-yao.md (1-132) \n\n스프린트 좀 돌려줘.  /sprint-run  한번에 끝까지 돌려주면 돼.",
+  "armed_at": "2026-08-03T01:06:18.370828+00:00",
+  "generator_active": true,
+  "evaluator_active": true,
+  "evaluator_round": 0,
+  "evaluator_pass": false,
+  "generator_started_at": "2026-08-03T22:24:38.862962Z"
+}

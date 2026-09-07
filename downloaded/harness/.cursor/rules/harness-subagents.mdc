@@ -1,0 +1,66 @@
+---
+description: "project1-next Harness — planner/generator/evaluator Task 호출. 커스텀 에이전트는 .cursor/agents/."
+globs: "*"
+alwaysApply: true
+---
+
+# Harness 서브에이전트 (project1-next)
+
+커스텀 에이전트 정의: **`.cursor/agents/planner.md`**, `generator.md`, `evaluator.md` (본 워크스페이스 루트).
+
+상세 게이트: `.cursor/rules/sprint-harness-gate.mdc`, `harness-loop.mdc`
+
+---
+
+## Goal (자율 종료 조건)
+
+`/sprint-run` 실행 시 **별도 `/goal` 없이** termination condition을 등록한다:
+
+> evaluator **Round 3+ PASS** + `HARNESS_CONTRACT_FILES` `npx tsc --noEmit` 무에러 + nginx/Next.js scope 클린
+
+메인은 위 조건 충족 전까지 사용자 개입 없이 아래 Task 순서를 자율 반복한다. evaluator **PASS** 후에만 최종 완료 답변.
+
+---
+
+## Task 호출 (고정)
+
+### planner (기획 · 읽기 전용)
+
+```
+Task(
+  subagent_type="explore",
+  readonly=true,
+  description="planner: 스프린트 범위 확정",
+  prompt="You are the planner Harness subagent. Read and follow exactly:\n.cursor/agents/planner.md\n\nRule context: auto-injected via harness-inject-rules-on-task (or Read .cursor/harness/cache/latest-planner.md).\nAlso read .cursor/rules/plan-sprint-format.mdc if needed.\n\n[사용자 요청·@기획서 경로·이번 턴 목표]"
+)
+```
+
+### generator (구현)
+
+```
+Task(
+  subagent_type="generalPurpose",
+  description="generator: Round N 구현",
+  prompt="You are the generator Harness subagent. Read and follow exactly:\n.cursor/agents/generator.md\n\nRule context: auto-injected (or Read .cursor/harness/cache/latest-generator.md).\n\nContract:\n[planner 출력 붙여넣기]"
+)
+```
+
+### evaluator (검증)
+
+```
+Task(
+  subagent_type="generalPurpose",
+  description="evaluator: Round N 채점",
+  prompt="You are the evaluator Harness subagent. Read and follow exactly:\n.cursor/agents/evaluator.md\n\nRule context: auto-injected (or Read .cursor/harness/cache/latest-evaluator.md).\n\nRound N. Contract: ...\nPASS only if Round>=3 and checklist in evaluator.md. Round 1-2: FAIL. Grill-me 5+.\nexport HARNESS_CONTRACT_FILES='src/app/foo/page.tsx,src/lib/bar.ts' (comma-separated from Contract 수정 목록)\nnpx tsc --noEmit\nbash .cursor/hooks/run-harness-checks.sh\nBrowser URL in Contract required for PASS."
+)
+```
+
+---
+
+## 순서
+
+0. **Goal** — `/sprint-run` = termination condition 등록
+1. `planner` → Contract
+2. `plan_evaluator` → Approved
+3. `generator` + `evaluator` → Contract 합의
+4. `generator` Round N → `evaluator` Round N (evaluator **PASS** + Round 3+)

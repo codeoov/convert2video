@@ -1,0 +1,173 @@
+---
+description: "happy_v12 도메인·화면 플로우 단일 참고: 로그인·회원가입·전화 OTP, 호스트 온보딩·홈·예약·입장 확인, 멤버 홈·라운지, 모임 만들기(10단계), 관리자 대시보드, 푸시·딥링크·복구. Route/Nav/게이트·Auth·Host·Gathering·Booking 화면 설계·버그·질문 시 적용."
+alwaysApply: false
+globs:
+  - "**/navigation/**/*.kt"
+  - "**/config/Route.kt"
+  - "**/ui/views/5_pages/**/gate/**/*.kt"
+---
+
+# 프로젝트 범위 (Kotlin) — happy_v12
+
+> **참조용**. Cursor가 질문·열린 파일(`globs`)·설명(`description`)에 맞춰 포함. 앱 목적·스택·**화면 플로우** 요약. 폴더/Atomic Design은 `structure-kotlin.mdc`, 핵심 규칙은 `happy-core-kotlin.mdc`, 목차는 `rules-index-kotlin.mdc`.
+
+## 1. 프로젝트 목적
+
+- **FRIP과 유사한 모임 플랫폼**
+- **인도네시아 시장 타겟팅** (향후 동남아 확장)
+- 사용자들이 모임을 만들고 참여할 수 있는 소셜 플랫폼
+
+### 핵심 가치
+
+- 사용자들이 다양한 모임을 발견하고 참여할 수 있는 플랫폼
+- 호스트와 참여자 간의 직접적인 소통 제공
+- 안전한 결제 시스템을 통한 모임 비용 지불
+- 커뮤니티 기능을 통한 후기 공유 및 소통
+
+---
+
+## 2. 기술 스택
+
+### 2.1 클라이언트 (Android)
+
+- **언어**: Kotlin
+- **UI**: Jetpack Compose
+- **아키텍처**: MVVM
+- **상태 관리**: ViewModel + StateFlow / SharedFlow
+- **의존성 주입**: Hilt
+- **네트워크**: Retrofit + OkHttp
+- **로컬 저장**: DataStore (SharedPreferences 대체)
+
+### 2.2 백엔드 (기존 유지)
+
+- **언어**: PHP
+- **데이터베이스**: MySQL (MariaDB)
+- **연결 방식**: PDO
+- **API 통신**: JSON 기반 RESTful API
+- **PHP API 구조**: `*_api.php`는 라우터만 담당. 비즈니스 로직은 `*_handlers/`로 분리. admin_api → `admin_handlers/`, gathering_api → `handlers/`, auth_api → `auth_handlers/`. 공통 유틸은 `utils/` (예: ip_helper.php). 핸들러는 require_once로 로드, 동일 스코프에서 함수 호출.
+- **백엔드 API 인증**: 세션 토큰 파서 `htdocs/utils/session_token_parser.php` (getSessionToken). auth 공통 에러 `htdocs/api/auth_handlers/auth_response_helper.php` (AuthErrors, authSendError). 클라이언트는 Authorization: Bearer. API v1 경로 `/api/v1/*.php` (클라이언트는 주로 `data/remote` Retrofit 리터럴; 예외만 `config/ApiEndpoints` — gathering 알림 경로·crash URL 조립). PHP 함수명은 프로젝트 일관성상 camelCase (handleXxx, getSessionToken, authSendError). 20260312-api-stability-phase0~4.
+
+### 2.3 아키텍처
+
+- **패턴**: MVVM + Clean Architecture. **폴더 트리·레이어 역할**은 `structure-kotlin.mdc` 단일 소스.
+
+---
+
+## 3. 금지 기술
+
+- Flutter/Dart 직접 사용 금지 (happy_v12는 Kotlin 전용)
+- DB 직접 접근 금지 (모든 데이터는 PHP API 경유)
+- activity, meetup, reservation, my_info 용어 사용 금지 (용어 규칙 전체: `happy-core-kotlin.mdc` §1·§2)
+
+---
+
+## 6. 로그인·회원가입 플로우 (Kotlin)
+
+- **웰컴**: 구글로 계속하기, 이메일로 계속하기, 이메일 로그인. 이메일 선택 시 `email_entry`로 이동. 이메일 로그인 → `EMAIL_LOGIN`(이메일+비밀번호 한 화면).
+- **구글 신규 사용자**: GoogleAuthLoadingScreen에서 `isNewUser == true` → `GOOGLE_AUTH_ADDITIONAL_INFO`(전화번호 입력) → `update_additional_info` → `GOOGLE_AUTH_PHONE_VERIFY/{phoneNumber}`(OTP 인증) → `send_otp` → `verify_phone_number` → suspended/dormant → ACCOUNT_BLOCKED, 이메일 없음 → EMAIL_VERIFICATION, 그 외 → SIGNUP_REFERRAL. 네비게이션 후 `AuthViewModel.clearLastAuthResult()` 호출.
+- **이메일 1단계**: 이메일 입력 후 "다음" → `check_email_for_signup` API로 기존/신규 판별. 기존 → `email_password_entry/{email}`, 신규 → `signup_password/{email}`.
+- **신규 사용자**: SignupPasswordScreen(비밀번호·이름·마케팅 동의) → `send_email_verification_link_for_signup` → EmailVerificationScreen(인증 대기). 뒤로가기 시 앱 종료. 인증 완료 시 `check_email_verification_status` / `create_session_after_email_verification` → HOME(MemberHomeGate).
+- **기존 사용자**: EmailPasswordEntryScreen(비밀번호) → `email_signin` → HOME.
+- **전화번호 회원가입**: 구글/이메일 로그인 후 전화번호 미인증(`phoneNumber` 비어있음 또는 `phoneVerified != true`)이면 `PHONE_SIGNUP/{email}`로 이동. PhoneSignupScreen(국가코드+전화번호) → `PHONE_VERIFY_SIGNUP` → OTP 발송(`send_otp`) → OTP 입력·검증(`verify_phone_number`) → `SIGNUP_REFERRAL`. 429 시 CooldownException, retry_after_seconds 쿨다운.
+- **초기 온보딩(전화 OTP 직후 등)**: 추천인 코드(선택, `SIGNUP_REFERRAL`) → 성별(`SIGNUP_GENDER`) → 생년월일(`SIGNUP_BIRTHDATE`) → 닉네임(`SIGNUP_NICKNAME`).
+- **가입 완료 후 프로필만 미완(추천인 단계 생략)**: `navigation/ProfileCompletionRoutes.kt`의 `profileCompletionStartRoute` — `user.isSignupComplete`일 때만 `!hasGender` → `Route.SIGNUP_GENDER`, `!hasBirthDate` → `Route.SIGNUP_BIRTHDATE`, `!hasNickname` → `Route.SIGNUP_NICKNAME`. 추천인 화면은 이 경로에 없음. MemberHomeGate에서 프로필 미완이면 `Route.WELCOME`으로 보내고, 웰컴 「프로필 입력 계속하기」가 위 함수로 첫 화면을 고름. `performWelcomeCheck`는 프로필 미완 시 상세 라우트를 반환하지 않고 `null`(웰컴 유지·사용자가 계속하기 탭).
+- **비로그인 시 홈 진입**: MemberHomeGate에서 `!isLoggedIn`이면 `Route.WELCOME`으로 리다이렉트.
+- **정지/휴면 계정**: performWelcomeCheck에서 status가 suspended/dormant → `Route.ACCOUNT_BLOCKED`. AccountBlockedScreen에서 로그아웃 후 WELCOME.
+- **추천인 코드**: SignupReferralScreen. 선택 입력, 건너뛰기 가능. `save_user_field(referralCode)` 저장 후 `signup_gender`로 이동.
+
+---
+
+## 7. 호스트 온보딩 플로우 (Kotlin)
+
+- **진입**: 마이페이지 → "호스트 되기" → HostOnboardingIntroScreen.
+- **Intro**: 안내 문구, 호스트 이용약관 동의, "시작하기" → HostOnboardingFormScreen.
+- **Form**: 사업자 정보·정산 계좌·세금 입력 → `save_host_profile` API → HostOnboardingCompleteScreen.
+- **Complete**: 완료 안내, "호스트 홈으로" → HOST_HOME (백스택 초기화).
+- **호스트 모드**: 마이페이지에서 이미 호스트인 경우 "호스트 모드" → HOST_HOME.
+
+---
+
+## 8. 호스트 홈·관리·예약·입장 확인 (Kotlin)
+
+- **호스트 홈**: HostHomeScreen. 왼쪽 서랍 4메뉴(홈, 관리, **통계**, 정산) 셸. 하단 NavigationBar 없음. "멤버 모드로 돌아가기" → MemberHome. **Single 범위에서 모임 상세 자동/준자동 진입** 규칙은 `docs/dev-records/kotlin/20260413-host-home-single-to-detail-navigation-phase0.md`(용어 `host home single scope to detail navigation`).
+- **Phase 0 기준** (`docs/dev-records/kotlin/20260408-host-ia-phase0-baseline.md`): 홈 탭은 **새 모임 만들기 CTA + 내 모임 목록** 중심. **내 모임 리뷰**는 홈에서 제거 예정 → **`host_2_manage`에서 진입**(구현 Phase 5). 홈·관리 탭 카드 탭 → **`Route.HOST_GATHERING_DETAIL`** (`HostGatheringDetailScreen`, `host_1_home/routes`; Phase 2 진입·플레이스홀더). 상세에서 **관리 메뉴**(`MANAGE_MY_GATHERING`)로 이어질 수 있음.
+- **홈 탭**: HostHomeTab. 상단 모임 만들기 CTA, 내 모임 목록(카드+다음 일정 플레이스홀더). 내 모임 리뷰는 홈에 없음(Phase 5에서 host_2_manage 진입).
+- **관리 탭**: HostManageTab. 정렬 드롭다운, 모임 카드 목록. 카드 탭 → (현행) ManageMyGatheringScreen; **목표 플로우는 홈에서 상세 우선**(§ Phase 0 문서).
+- **모임 관리**: ManageMyGatheringScreen. 모임 일정, 수정 요청, 회원 관리, 예약자 목록 등. 수정 요청 → EditRequestDialog → auth_api create_edit_request. PENDING 시 취소 확인 다이얼로그 → cancel_edit_request.
+- **예약자 목록**: HostGatheringBookingsScreen. 회차 필터, 예약자 카드, 노쇼 처리, "예약 번호로 확인", "QR 스캔".
+- **입장 확인(예약 번호)**: HostBookingVerifyScreen. 예약 번호 입력 → 조회 → 체크인. `?bookingId=&token=` 쿼리 지원.
+- **입장 확인(QR)**: HostBookingScanScreen. 카메라 스캔 + 붙여넣기 탭 지원.
+- **내 모임 리뷰**: HostGatheringReviewsScreen. 리뷰 카드, 답글 보기/작성.
+- **탈퇴 복구**: 로그인 실패 시 "탈퇴 예정" 에러 → AlertDialog "복구" → RestoreRequestScreen(이메일 입력, 복구 링크 발송). 딥링크 `myapp://restore?token=xxx` → RestoreConfirmScreen(복구 처리).
+- **이메일 로그인**: `EMAIL_LOGIN`. 이메일+비밀번호 한 화면. "로그인 링크 받기" → send_email_login_link(이메일 입력 시). 진입점: 웰컴(직접), RestoreConfirm "로그인", ChangeEmail/ChangePhone 성공 후. 비밀번호 재설정 완료 후 → EMAIL_LOGIN.
+- **이메일 변경**: ChangeEmailScreen. 2단계 플로우(새 이메일 입력 → 인증 링크 발송 → 링크 클릭 후 변경). send_email_verification_link. 비밀번호 불필요.
+- **이메일 인증 대기**: EmailVerificationScreen. "가입 취소" → delete_incomplete_signup → WELCOME.
+- **모임 리뷰 작성**: 예약 티켓(결제 완료) → "리뷰 작성" → GatheringReviewWriteScreen(평점·내용·사진). create_review API.
+- **호스트 채팅**: 하단 채팅 탭 없음. `HostGatheringHubScreen` 채팅 탭에서 `ChatRoomScreen` 임베드 + 「채팅 관리」→ `ChatMyGatheringScreen`(`host_2_manage/routes`). 전역 호스트 채팅 목록 UI·`HostChatViewModel`·`HostChatCardItem`은 제거됨(Phase 3).
+- **통계 탭**: `HostStatsTab` → `HostStatsPage`(`host_3_stats`, `HostStatsViewModel`). 전체 합계(체크인·성별·연령 집계 안내)·모임별 요약 카드는 **샘플 데이터**; 카드 탭 → `HOST_GATHERING_STATS_DETAIL/{gatheringId}`(`HostGatheringStatsDetailScreen`, 기간 칩·퍼널·전월 대비·리뷰 분포 더미). **기간·지표·UI 타입·퍼널·MoM** 은 `terminology-glossary.mdc` 호스트 통계 표; 기록은 ST0(`20260408-host-stats-phase-st0.md`)·ST1(`20260408-host-stats-phase-st1.md`). 실 API·DB 연동은 후속(ST2~).
+- **정산**: HostSettlementTab. 기간·상태 필터, 요약 카드, 정산 목록. `HostGatheringScope.Single(gatheringId)`일 때 `gatheringId` 기준 필터(제목 문자열 비교 금지).
+
+---
+
+## 8.0 푸시·딥링크 (Kotlin)
+
+- **푸시**: OneSignal 연동. HappyApplication에서 `BuildConfig.ONE_SIGNAL_APP_ID`로 초기화. 로그인/세션 복원 시 `PushTokenSender.sendTokenAfterLogin()` (내부에서 `requestNotificationPermission()` → 푸시 토큰 전송). 포그라운드 진입 시 `sendTokenOnForeground()` (1분·24시간 제한). auth_api `save_push_token`.
+- **알림 클릭**: PushNotificationHandler → type별 라우팅 (message_arrived→채팅방, chat_invite→홈 등). DeepLinkViewModel이 NavRequest emit → HappyApp에서 navigate.
+- **딥링크**: MainActivity `onNewIntent` → PendingDeepLinkHolder.emit(uri). DeepLinkViewModel이 수신 후 처리.
+  - `myapp://chat/join?token=xxx`: joinByInviteToken → 채팅방 이동.
+  - `myapp://invite?ref=CODE`, `myapp://signup?ref=CODE`: setPendingReferralCode, 비로그인 시 웰컴 이동.
+  - `myapp://restore?token=xxx`: parseRestoreToken → RestoreConfirm 화면 이동 (popUpTo WELCOME).
+  - `myapp://verify-email?token=xxx`: 이메일 변경 인증 → EmailVerifyTokenScreen (isSignup=false). auth_api send_email_verification_link.
+  - `myapp://verify-email-signup?token=xxx`: 회원가입 인증 → EmailVerifyTokenScreen (isSignup=true). auth_api send_email_verification_link_for_signup.
+- **크래시 리포팅**: HappyApplication에서 CrashReportHandler.init(this). UncaughtExceptionHandler, CoroutineExceptionHandler(appScope). crash_api 전송, 실패 시 pending_crash.json 저장·재시도.
+
+---
+
+## 8.1 관리자 대시보드 (Kotlin)
+
+- **진입**: 마이페이지 → 관리자 메뉴(관리자만 노출) → AdminDashboardGateScreen → AdminDashboardScreen.
+- **4개 메뉴**: 홈(신고·유저·분쟁), 재무(정산·환불), 승인(카탈로그·호스트·수정 요청), 관리(쿠폰·배너·감사 로그).
+- **배너 관리**: AdminBannersTab. 목록·생성·삭제. link_type: none, url, gathering. admin_api list_banners_admin, create_banner, update_banner, delete_banner.
+
+---
+
+## 8.2 모임 만들기 플로우 (Kotlin)
+
+- **진입**: 호스트 홈 탭 → "모임 만들기" → CreateGatheringScreen.
+- **10단계**: 0 인트로 → 1 종류 → 2 가격 → 3 카테고리 → 4 장소 → 5 회차 → 6 제목 → 7 설명 → 8 이미지 → 9 확인.
+- **드래프트**: 단계 이동 시 DataStore에 임시 저장. 진입 시 복원 다이얼로그(이어서 작성/새로 작성).
+- **제출 중 뒤로가기**: BackHandler + 확인 다이얼로그("제출 중입니다. 취소하시겠습니까?").
+- **드래프트 저장 실패**: saveDraftError → SnackBar "임시 저장에 실패했습니다."
+- **장소 선택(4단계)**: CreateGatheringPlaceContent → "지도에서 선택" → GOOGLE_MAP_PICKER. initialPlace 쿼리로 기존 주소 전달, Geocoder·Places Autocomplete·FetchPlace. savedStateHandle "selected_place"로 반환.
+
+---
+
+## 8.3 멤버 홈 (Kotlin)
+
+- **하단 네비 5탭**(Phase D): 홈(0)·발견(1)·라운지(2)·채팅(3)·마이페이지(4). 폴더 순서는 `structure-kotlin.mdc` §1.5 Phase D. 호스트 홈 4탭과 인덱스·의미가 다르다.
+- **홈 탭(0)**: MemberHomeScreen → Member1HomePage. 배너, 가로 섹션(추천·인기·신규 등), 상단 서브탭(추천/인기/신규 리스트). 앱바 검색만(모임 필터 패널 없음).
+- **세로 카드 더보기**: 섹션 헤더 "더보기" → VERTICAL_CARD_MORE/{sectionType}. VerticalCardMoreScreen, sectionType: featured | popular | recommended | new. 리스트 카드는 모두 CardItemImageLeft 계열. HOME_VERTICAL_MORE_* 펼침 공통. new 데이터는 loadGatherings(orderBy=newest). 신규 모임 섹션은 Member1HomeTemplate에서 `new`로 진입.
+- **발견 탭(1)**: DiscoveryTabContent — 모임 유형·필터·검색 연결(`phase2-kotlin.mdc` §2).
+- **라운지 탭(2)**: Member3LoungePage. 피드 목록·피드 상세(있는 경우 Feed 라우트). 비소유자 신고 → reportFeed 등(`phase9-kotlin.mdc`).
+- **채팅 탭(3)·마이페이지 탭(4)**: Member4ChatsPage, Member5MyPagePage.
+
+---
+
+## 9. 개발 Phase
+
+- **Phase 1**: 골격·핵심 | 라우트·NavHost·웰컴·인증·회원가입·탈퇴복구·비밀번호재설정
+- **Phase 2**: 멤버·호스트 | 홈·모임·예약·채팅·마이페이지·호스트·관리자·푸시·딥링크
+- **Phase 3**: 보조 기능·강화 | QR 스캔 UX·에러 처리·오프라인·모임 관리·Feed 삭제
+- **Phase 4**: UX·고도화 | 관리자 승인·전화번호 국가 코드·접근성·UI polish
+- **Phase 5**: 관리자 확장 | 홈·재무·승인·관리 4그룹 전체
+- **Phase 6**: 안정화·최적화 | 에러 처리·오프라인·성능·테스트
+- **Phase 7**: UX 고도화 | 배너 자동 슬라이드, 커스텀 폰트, 아이콘 애니메이션, 화면 스케일, 달력 UI
+- **Phase 8**: 홈 가로 스크롤·카드 UI | 섹션 헤더(부제목·더보기), 카드(카테고리·호스트·평점·찜 수), listCardBorderRadius
+
+**참고**: `.cursor/rules/phase1-kotlin.mdc` ~ `phase8-kotlin.mdc` 상세 규칙. Phase 8은 홈 가로 스크롤 섹션·카드 UI 개선(문토 스타일).
+
+---
+
+## 10. 한 줄 요약
+
+> Kotlin + Compose + Hilt + Retrofit. PHP + MySQL 백엔드 유지. 용어는 terminology-glossary 준수.

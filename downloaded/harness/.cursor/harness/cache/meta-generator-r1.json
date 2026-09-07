@@ -1,0 +1,15 @@
+{
+  "role": "generator",
+  "type": "C",
+  "round": 1,
+  "files": [
+    "nextjs-rule.mdc",
+    "nextjs-security.mdc",
+    "nextjs-ai-prevention.mdc",
+    "nextjs-performance.mdc",
+    "nextjs-dev-cache.mdc"
+  ],
+  "chars": 15463,
+  "path": ".cursor/harness/cache/rule-context-generator-r1.md",
+  "generated_at": "2026-08-03T22:18:26.060456+00:00"
+}

@@ -1,0 +1,85 @@
+---
+description: "happy_v12 Phase 6 — stabilization & optimization: ErrorDisplayHelper (Dev/Prod), Snackbar/API error patterns, offline (OfflineBanner, ConnectivityRepository, OfflineMessageQueue, MemberHome offline UX), performance (AppLoadingIndicator, SkeletonCardOrganism, LazyColumn paging, image loading), HTTP timeouts (ApiTimeouts, NetworkModule). Use when working on error UX, connectivity, offline queue, loading placeholders, timeouts, or Phase 6 test checklist."
+alwaysApply: false
+globs:
+  - "**/ErrorDisplayHelper.kt"
+  - "**/OfflineBannerOrganism.kt"
+  - "**/OfflineMessageQueue.kt"
+  - "**/ConnectivityRepository.kt"
+  - "**/AppLoadingIndicatorMolecule.kt"
+  - "**/SkeletonCardOrganism.kt"
+  - "**/ApiTimeouts.kt"
+  - "**/NetworkModule.kt"
+  - "**/controllers/member/home/MemberHomeViewModel.kt"
+  - "**/member_4_chats/ChatRoomScreen.kt"
+  - "**/src/test/**/*.kt"
+  - "**/src/androidTest/**/*.kt"
+---
+
+# Phase 6: 안정화·최적화 — happy_v12
+
+**목표**: 에러 처리·오프라인·성능·테스트 일관성 확보  
+**상태**: ✅ 완료
+
+---
+
+## 1. 에러 처리
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| ErrorDisplayHelper | Dev/Prod 분리, stringResource | ✅ |
+| SnackBar 피드백 | ViewModel onResult → SnackbarHostState | ✅ (do-not-repeat §6.2) |
+| API try-catch | Repository/ViewModel 예외 처리 | ✅ (ErrorDisplayHelper 사용처 다수) |
+| 타임아웃 | HTTP 요청 타임아웃 설정 | ✅ (ApiTimeouts, NetworkModule 10s) |
+
+**참고**: `ErrorDisplayHelper.kt`, `do-not-repeat-kotlin.mdc` §4.1, §6.2
+
+---
+
+## 2. 오프라인
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| OfflineBanner | ChatRoomScreen 등 오프라인 시 표시 | ✅ |
+| ConnectivityRepository | connectivity_plus 연동 | ✅ |
+| OfflineMessageQueue | 채팅 오프라인 저장·재전송 | ✅ (온라인 복귀 시 자동 재전송) |
+| 주요 화면 오프라인 배너 | 홈·피드·마이페이지 등 | ✅ (MemberHomeScreen 모든 탭, MemberHomeViewModel) |
+
+**참고**: `OfflineBanner.kt`, `ConnectivityRepository.kt`, `OfflineMessageQueue.kt`, `MemberHomeViewModel.kt`
+
+---
+
+## 3. 성능
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| AppLoadingIndicator | CircularProgress 대체 (Theme) | ✅ |
+| SkeletonCardOrganism | 로딩 플레이스홀더 | ✅ |
+| LazyColumn 페이징 | hasMore, loadMore | ✅ |
+| 이미지 로딩 | Coil crossfade 등 | ✅ (BannerSlider, FeedCard, GatheringCard 등) |
+
+---
+
+## 4. 테스트
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| Unit Test | ViewModel, Repository (선택) | 🔲 |
+| UI Test | Compose 테스트 (선택) | 🔲 |
+| 빌드 안정화 | assembleDebug 성공 | ✅ |
+
+---
+
+## 5. Phase 6 완료 체크리스트
+
+- [x] 에러 처리 일관성 (ErrorDisplayHelper: begin·common·GoogleMapPicker)
+- [x] 오프라인·OfflineMessageQueue 검증 (온라인 복귀 시 자동 재전송)
+- [x] HTTP 타임아웃·API 에러 처리 (ApiTimeouts 10s)
+- [x] assembleDebug 성공 (clean build)
+- [ ] (선택) Unit/UI 테스트 추가
+
+---
+
+## 6. 한 줄 요약
+
+> Phase 6: 에러 처리·오프라인·성능·테스트 안정화 및 최적화.

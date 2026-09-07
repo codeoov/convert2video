@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C2V Desktop Recorder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="card">
+  <h1>🎙 C2V Desktop Recorder</h1>
+  <div id="timer">00:00</div>
+  <div class="btn-row">
+    <button id="btn-start">Start</button>
+    <button id="btn-stop" disabled>Stop</button>
+  </div>
+  <div id="status">Ready</div>
+
+  <div class="device-section">
+    <h2 class="device-section-title">📱 주변 기기</h2>
+    <p id="device-hint">같은 Wi-Fi에 연결되어 있는지 확인하세요</p>
+    <ul id="device-list"></ul>
+  </div>
+
+  <!-- Pairing status section — shown only when phase != idle -->
+  <div class="pairing-section" id="pairing-section" style="display:none">
+    <div class="pairing-status-row">
+      <span id="pairing-msg" class="pairing-msg"></span>
+      <button id="btn-cancel-pair" class="btn-cancel-pair" style="display:none">취소</button>
+    </div>
+    <div id="pairing-error" class="pairing-error"></div>
+    <button id="btn-send" class="btn-send" disabled style="display:none">지금 전송 ↑</button>
+  </div>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+---
+description: "Codex phase-run 진입 포인터 — 새 Phase Task 직렬 실행과 상태/재개."
+alwaysApply: false
+---
+
+# Codex Phase Run
+
+`/phase-run`, `$phase-run`, `페이즈런` 실행·재개·상태·미리보기는
+`.agents/skills/phase-run/SKILL.md`를 읽고 해당 모드로 처리한다.
+`/sprint-run`은 기존대로 단일 Phase 하네스다.
+
+Phase Run coordinator의 분류·상태 기록·Task 생성은 상위 제어 작업이다.
+하네스 Gate 표와 구현 루프는 `harness`로 분류된 Phase Task에서 실행한다.
+`read-only` Phase는 `.phase-run/`의 실행 기록 외 파일을 수정하지 않으므로
+구현 하네스 대상이 아니다. 필수 진단/수동 gate가 미완료이면 다음 Phase로 못 간다.
+
+새 Task 생성은 사용자가 Phase Run **실행**을 요청했을 때만 한다.
+기능 설치·규칙 편집·질문·미리보기·상태 조회는 플랜 실행 요청이 아니다.
+
+Codex의 native subagents와 사용자 소유 Task를 구분한다. Phase만 새 Task이며,
+planner/plan_evaluator/generator/evaluator는 native subagents다. 지원 도구가
+없으면 정확히 알리고 중지하며 다른 도구로 권한·사용량 제한을 우회하지 않는다.

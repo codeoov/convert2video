@@ -4,42 +4,7 @@ globs: "**/*.{kt,kts}"
 alwaysApply: false
 ---
 
-# 프로젝트 범위 — convert2video
+> 전체 내용은 단일 소스 [`CLAUDE.md`](../../CLAUDE.md) § Product Scope 참고.
+> 이 파일은 Cursor 규칙 엔진과 Harness 번들러가 자동 로드하기 위한 포인터입니다.
 
-## 1. 제품 한 줄
-
-오디오 + 배경 이미지를 합쳐 MP4 영상으로 만들고, 기기 갤러리에 저장하는 **로컬 전용** Android 앱.
-
-## 2. 현재 플로우
-
-1. **홈** (`HomeScreen`)
-   - 선택된 배경화면 + 오디오 표시, 변환 시작 버튼
-   - `conversionState: StateFlow<ConversionUiState>` 단일 소스 (`HomeViewModel`)
-2. **배경 선택** (`BackgroundPickScreen`)
-   - 갤러리에서 이미지 추가 → `filesDir/backgrounds/` 복사 + Room 저장
-   - 탭으로 선택(단일 선택), 롱프레스 삭제
-3. **오디오 선택** (`AudioPickScreen`)
-   - MediaStore에서 오디오 목록 조회 (`AudioRepository`)
-   - 권한 없으면 GetContent 폴백
-4. **변환 시작**
-   - 선택된 배경 + 오디오 URI → `WorkManager` unique work `audio_to_video_conversion`
-   - `ConversionWorker` → `VideoConverter`(Media3) → `MediaStoreSaver`
-5. **진행/결과 UI**
-   - `conversionState: StateFlow<ConversionUiState>` 가 WorkInfo 매핑 (앱 재진입 후에도 복구)
-   - 다이얼로그는 `HomeScreen`에서 표시
-
-## 3. 비범위 (당분간)
-
-- 계정·로그인·서버 동기화
-- 클라우드 업로드/다운로드
-- 다중 트랙 편집·자막·타임라인 에디터 (요청 시 별도 스프린트)
-
-## 4. 권한
-
-- 이미지/오디오 피커·저장 시 필요한 미디어 권한만. 과도한 권한 추가 금지.
-
-## 5. 품질 기준 (런타임 포인트)
-
-- 변환 중 앱을 내려도 WorkManager 작업이 이어지는지
-- 실패 시 사용자에게 스택 대신 짧은 메시지
-- 대용량 이미지는 short-side 제한(`VIDEO_SHORT_SIDE_PX`) 유지
+@../../CLAUDE.md

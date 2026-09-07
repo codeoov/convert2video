@@ -1,0 +1,93 @@
+---
+description: "happy_v12 Phase 3 — supplementary UX & APIs: QR booking scan (QrScannerView, HostBookingScanScreen, HapticUtils), error/Snackbar patterns (ErrorDisplayHelper, Member5MyPagePage), offline & retry (OfflineBanner, ErrorRetryView), host gathering management (ManageMyGatheringScreen), Feed API including delete_feed (FeedApi). Use when editing QR scan, error feedback, offline/retry UI, manage-my-gathering flows, or feed remote APIs."
+alwaysApply: false
+globs:
+  - "**/QrScannerView.kt"
+  - "**/HostBookingScanScreen.kt"
+  - "**/HapticUtils.kt"
+  - "**/ErrorDisplayHelper.kt"
+  - "**/Member5MyPagePage.kt"
+  - "**/OfflineBanner.kt"
+  - "**/ErrorRetryView.kt"
+  - "**/ManageMyGatheringScreen.kt"
+  - "**/FeedApi.kt"
+---
+
+# Phase 3: 보조 기능·강화 — happy_v12
+
+**목표**: QR 스캔 UX 완성, 에러 처리·오프라인 강화, 모임 관리 확장  
+**상태**: 🔲 진행 중
+
+---
+
+## 1. QR 스캔 (HostBookingScanScreen, QrScannerView)
+
+| Phase | 항목 | 상태 |
+|-------|------|------|
+| Phase 1 | 카메라 프리뷰 + QR 인식 (CameraX + ML Kit) | ✅ 완료 |
+| Phase 2 | 붙여넣기 탭 | ✅ 완료 |
+| Phase 3 | 스캔 성공 진동, 잘못된 QR Snackbar | ✅ 완료 |
+| Phase 4 | 뷰파인더, 플래시, 카메라 전환 | ✅ 완료 |
+| Phase 5 | 카메라/ML Kit 에러 Snackbar, 권한 거부 시 설정 유도 | ✅ 완료 |
+
+**참고**: `QrScannerView.kt`, `HostBookingScanScreen.kt`, `HapticUtils.kt`
+
+---
+
+## 2. 에러 처리·피드백
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| ErrorDisplayHelper | Dev/Prod 분리, stringResource | ✅ |
+| SnackBar 일원화 | ViewModel onResult 콜백 → SnackbarHostState | 🔲 |
+| Member5MyPagePage | TODO: SnackBar Phase 2 | 🔲 |
+
+---
+
+## 3. 오프라인·재시도
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| OfflineBanner | connectivity_plus 연동 | ✅ |
+| ErrorRetryView | 재시도 버튼 | ✅ |
+| 재시도 로직 | API 실패 시 자동 재시도 (선택) | 🔲 |
+
+---
+
+## 4. 모임 관리 확장 (ManageMyGatheringScreen)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 모임 일정 | onNavigateToGatheringDetail | ✅ |
+| 회원 관리·예약자 목록 | onNavigateToBookings | ✅ |
+| 상품·사진·프로모션 | 준비 중 Snackbar | ✅ |
+
+**참고**: `ManageMyGatheringScreen.kt`. 상품/사진/프로모션은 API·화면 미구현으로 "준비 중" 안내.
+
+---
+
+## 5. Feed API 확장
+
+| Phase | 항목 | 상태 |
+|-------|------|------|
+| Phase 1 | list_feeds, get_feed | ✅ |
+| Phase 2 | create_feed, add_feed_images | ✅ |
+| Phase 3 | delete_feed | ✅ 완료 |
+
+**참고**: `FeedApi.kt`
+
+---
+
+## 6. Phase 3 완료 체크리스트
+
+- [x] QR 스캔 Phase 3~5 검증·완성
+- [ ] SnackBar 에러 피드백 일원화
+- [x] ManageMyGatheringScreen Phase 3+ 버튼 (상품·사진·프로모션 "준비 중" 안내)
+- [x] Feed delete_feed API 연동
+- [ ] 오프라인·재시도 로직 검증
+
+---
+
+## 7. 한 줄 요약
+
+> Phase 3: QR 스캔 UX·에러 처리·오프라인·모임 관리·Feed 삭제 등 보조 기능 강화.

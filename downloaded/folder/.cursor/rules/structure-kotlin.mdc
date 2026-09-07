@@ -1,0 +1,184 @@
+---
+description: >-
+  happy_v12 Kotlin/Compose app layout: package tree, Atomic Design (1_atoms–5_pages),
+  where to put new files (controllers, data, domain, ui/views, navigation, di, config,
+  handlers, helpers, utils), role separation, and test folder mirroring. Use when
+  adding or moving Kotlin sources, choosing organism vs template vs page, or asking
+  "which folder does this belong in?".
+globs:
+  - "**/src/main/java/**/ui/views/**/*.kt"
+  - "**/src/main/java/**/controllers/**/*.kt"
+  - "**/src/main/java/**/data/**/*.kt"
+  - "**/src/main/java/**/domain/**/*.kt"
+  - "**/src/main/java/**/navigation/**/*.kt"
+  - "**/src/main/java/**/di/**/*.kt"
+  - "**/src/main/java/**/config/**/*.kt"
+  - "**/src/main/java/**/handlers/**/*.kt"
+  - "**/src/main/java/**/helpers/**/*.kt"
+  - "**/src/main/java/**/utils/**/*.kt"
+  - "**/src/test/**/*.kt"
+  - "**/src/androidTest/**/*.kt"
+alwaysApply: false
+---
+
+# 프로젝트 구조 (Kotlin) — happy_v12
+
+> **적용**: Cursor가 설명(description)·경로(globs)에 맞을 때 자동 포함. 상시 주입 아님(`alwaysApply: false`). 패키지 트리·Atomic Design·역할 분리. 요약·목차는 `happy-core-kotlin.mdc`, `rules-index-kotlin.mdc`.
+
+## 1. 패키지 구조
+
+```
+com.example.happy_v12/
+├── di/                 # Hilt 모듈
+├── config/             # API 설정, Route, MyPageTabItems, AdminErrorCodes, GatheringCategoryOptions, ApiActions, DomainStatus, DomainLimits, ChatConstants, ApiPaging, ApiTimeouts
+├── navigation/         # NavHost, feature별 NavGraph (AuthNavGraph, MemberNavGraph, HostNavGraph, CommonNavGraph), DeepLinkBinder
+├── data/
+│   ├── dto/            # API 응답/요청 DTO (data class)
+│   ├── remote/         # Retrofit API 인터페이스
+│   ├── repository/     # Repository 구현체 (AuthSignInRepository, AuthSessionRepository, AuthRepositorySupport, CooldownException 등)
+│   ├── local/          # DataStore, 캐시
+│   ├── adapters/       # domain/contracts 구현체 (Phase 2 이후)
+│   └── (정적 옵션)     # dto/remote/repository/local 외. PurposeOptions는 domain/options/
+├── domain/
+│   ├── model/          # 도메인 모델 (SimpleActionResult, GeoPoint, StorageUploadResult, ApiResponseBody 등. 실제 위치는 core:model 모듈)
+│   ├── enums/          # Result, *Status 등
+│   ├── options/       # PurposeOptions 등 도메인 선택지 상수
+│   ├── contracts/     # 외부 라이브러리 래핑 인터페이스 (ApiClient, JsonCodec, HttpDownloadClient, MultipartUploadClient, HttpInterceptor, HttpPostClient, PushClient, PushNotificationContract, MapClient, QrClient, ImageCropClient, WrapperError)
+│   └── usecase/        # UseCase (선택)
+├── controllers/       # Controller (상태, API, 사용자 행동)
+│   ├── begin/         # 웰컴, 로그인, 회원가입
+│   ├── member/
+│   ├── host/
+│   ├── admin/
+│   └── common/
+├── ui/
+│   ├── views/          # Atomic Design (1_atoms → 2_molecules → 3_organisms → 4_templates → 5_pages)
+│   │   ├── state/      # 화면·템플릿·유기체용 상태 (ViewModel UiState와 분리). 패키지 ui.views.state.* — common/, member_1_home/ ~ member_5_mypage/, host_support/, host_2_manage/, host_3_stats/ 등 도메인별
+│   │   ├── 1_atoms/    # 최소 단위 (버튼, 텍스트, 아이콘 등)
+│   │   ├── 2_molecules/  # atoms 조합 (하위: app_bars/, cards/, search/, navigation/ 등. 패키지 molecules.* 와 동일)
+│   │   ├── 3_organisms/  # molecules 조합 — v11 스타일 도메인별 하위 폴더
+│   │   │   ├── begin/              # 인증·온보딩 유기체 — `common/`·`google/`·`email/`·`welcome/begin_welcome_1_hub` 등. `4_templates/begin/…`·`5_pages/begin/…` 과 세그먼트 맞춤. 패키지 예시 A: §1.5
+│   │   │   ├── member_1_home/      # BannerSlider, GatheringCard, search/(검색 랜딩), featured_more/, popular_more/, recommended_more/, new_more/, wishlist/, HeroGatheringSlotsOrganism, HorizontalCardListOrganism 등
+│   │   │   ├── member_2_discovery/ # 발견 탭 단일 소스: 유형별·퀵필터 브라우즈 등 → `4_templates/member_2_discovery`, `5_pages/member_2_discovery`, `state/member_2_discovery`와 세그먼트 맞출 것 (Phase D)
+│   │   │   ├── member_3_lounge/    # FeedCard, 라운지 피드
+│   │   │   ├── member_4_chats/     # 채팅 목록 탭 등(채팅방 본문 유기체는 common/chats)
+│   │   │   ├── member_5_mypage/    # MyPageHeaderOrganism, MyPageListCardOrganism, DisputeTicketsListOrganism, DisputeTicketDetailOrganism, DisputeTicketMessageOrganism
+│   │   │   ├── host_0_onboarding/  # 호스트 온보딩 organism
+│   │   │   ├── host_1_home/        # 호스트 홈 본문·create_gathering/·routes/ 호스트 모임 상세. 하단 NavigationBar 없음(Phase 0 baseline: docs/dev-records/kotlin/20260408-host-ia-phase0-baseline.md)
+│   │   │   ├── host_sidebar/       # 호스트 서랍(GA 셸) 전용 유기체. host_1_home와 분리된 독립 도메인 폴더(Phase 6 정책: 유지)
+│   │   │   ├── host_support/     # 호스트 지원: FAQ 목록·설정 목록 유기체 등 (`5_pages/host_support`·`4_templates/host_support`·`state/host_support`와 세그먼트 맞출 것)
+│   │   │   ├── host_2_manage/      # QrScannerView, HostBookingVerifyResultOrganism, HostBookingCardOrganism; `host_chats/` 모임별 채팅 관리(ChatMyGatheringManageOptionsOrganism 등)
+│   │   │   ├── host_3_stats/      # HostStatsGatheringCardOrganism, HostStatsDetailBodyOrganism, HostGatheringStatsDetailLoadableOrganism(샘플 데이터·API 후속)
+│   │   │   ├── host_4_settlement/ # HostSettlementSummaryCardOrganism, HostSettlementCardOrganism
+│   │   │   ├── admin_1_home/ # AdminBottomNavBar
+│   │   │   ├── scaffolds/         # AuthStepScaffold, BackNextButtons (공통 레이아웃 셸·단계 버튼)
+│   │   │   └── common/            # ErrorRetryView, OfflineBanner, PlaceholderTabContentOrganism, SkeletonCardOrganism, NavTabItem; chats/chat_room·chat_info(ChatRoomBodyOrganism, ChatRoomInputOrganism, …)
+│   │   ├── 4_templates/  # 레이아웃 골격 — v11 스타일 도메인별
+│   │   │   ├── begin/             # 인증·온보딩 템플릿 — `shared/`(CenteredContentTemplate, BeginStepTemplate) + `welcome|google|email|common/` 아래 `begin_*_N_*`(대응 organism과 1:1)
+│   │   │   │   ├── shared/
+│   │   │   │   ├── welcome/begin_welcome_1_hub/   # WelcomeTemplate
+│   │   │   │   ├── google/begin_google_1_loading/  # GoogleAuthLoadingTemplate
+│   │   │   │   ├── email/begin_email_* /           # EmailVerifyTokenTemplate 등
+│   │   │   │   └── common/begin_common_* /         # PhoneSignupTemplate, SignupNicknameTemplate 등
+│   │   │   ├── member_1_home/     # Member1HomeTemplate, GatheringSearchTemplate, FeaturedMoreTemplate, PopularMoreTemplate, RecommendedMoreTemplate, NewMoreTemplate, WishlistTemplate 등
+│   │   │   ├── host_0_onboarding/
+│   │   │   ├── host_1_home/     # HostHomeTabListTemplate, HostGatheringReviewsTemplate; routes/CreateGatheringTemplate
+│   │   │   ├── host_support/    # HostSupportHubTemplate 등 지원 허브·설정 템플릿
+│   │   │   ├── host_2_manage/
+│   │   │   ├── host_3_stats/     # HostStatsTabTemplate, HostStatsOverviewTemplate; 상세는 Screen+유기체 조립
+│   │   │   ├── host_4_settlement/
+│   │   │   ├── member_2_discovery/ # 발견 브라우즈 템플릿 — `3_organisms/member_2_discovery`와 세그먼트 맞춤
+│   │   │   ├── member_3_lounge/
+│   │   │   ├── member_4_chats/     # ChatsTabTemplate 등 **채팅 목록 탭** 전용. 채팅방 셸은 `common/chats/ChatRoomTemplate`
+│   │   │   ├── member_5_mypage/   # MyPageTabTemplate, MyPageSettingsFormTemplate, MyPageTicketListTemplate, MyPageActionConfirmTemplate
+│   │   │   ├── admin_1_home/
+│   │   │   └── common/   # FormTemplate, ScaffoldWithBottomNavTemplate; **chats/** ChatRoomTemplate(멤버·호스트 공통 채팅방)
+│   │   └── 5_pages/    # 화면별 (Screen, ViewModel은 controllers/) — v11 스타일. Scaffold 직접 사용 금지, 템플릿 사용 (do-not-repeat §2).
+│   │       ├── begin/               # 인증·온보딩 Screen — `common|welcome|google|email/` + `begin_*_N_*` (패키지 `pages.begin.<segment>.*`, 예시 A §1.5). 예: `welcome/begin_welcome_1_hub/WelcomeScreen`, `google/begin_google_1_loading/…`, `email/begin_email_1_signup_password/…`, `common/begin_common_1_phone/…`
+│   │       ├── member_1_home/       # 멤버 홈
+│   │       ├── member_2_discovery/ # 발견 탭 Screen — state·template·organisms와 동일 `member_2_discovery` 트리
+│   │       ├── member_3_lounge/    # 라운지
+│   │       ├── member_4_chats/     # 목록 탭·채팅방·방정보 **Screen**; 본문 유기체·ChatRoomTemplate는 `common/chats`
+│   │       ├── member_5_mypage/    # 마이페이지
+│   │       ├── host_0_onboarding/  # 호스트 온보딩
+│   │       ├── host_1_home/        # 호스트 홈·관리·리뷰·모임 상세; routes/CreateGatheringScreen(모임 만들기). 지원 허브·설정 Screen은 `host_support/`
+│   │       ├── host_support/      # HostSupportHubScreen, HostSupportSettingsScreen 등 (`routes/`)
+│   │       ├── host_2_manage/      # 모임 관리, 예약, 입장 확인, 모임 허브·모임별 채팅 관리(routes/ChatMyGatheringScreen)
+│   │       ├── host_3_stats/       # HostStatsPage; routes/HostGatheringStatsDetailScreen(모임별 통계 상세)
+│   │       ├── host_3_blank/       # Sprint 10 임시 STATS blank Page만 (Organism/Template/State 없음)
+│   │       ├── host_4_settlement/   # 호스트 정산
+│   │       ├── admin_1_home/  # 관리자 홈(대시보드 셸)
+│   │       └── common/            # 공통 화면 (ProfileView, GoogleMapPicker)
+│   ├── components/     # 재사용 래퍼 (organisms/molecules에 위임)
+│   └── theme/          # 테마, 색상, AppSpacing, AppSizes, AppAlpha, AppFontSizes, AppColors, ChatRoomColors, ProfileEditColors, AppSemanticColors
+├── handlers/           # 푸시, 딥링크 등 이벤트 처리
+├── helpers/            # 지문, 구글 로그인, 에러 표시, ExternalUrlOpenHelper 등
+└── utils/              # 날짜, 금액, 검증, 이미지 압축, 리치 텍스트 변환 등 순수 유틸
+
+# 루트: HappyApp.kt (NavHost 포함), MainActivity.kt, HappyApplication.kt
+```
+
+## 1.4 테스트 폴더
+
+- **Unit**: `app/src/test/` — main 패키지 구조와 동일 (예: utils/ValidatorsTest.kt).
+- **AndroidTest**: `app/src/androidTest/` — main 패키지 구조와 동일 (예: data/repository/FakeAuthApi.kt, AuthRepositoryAndroidTest.kt).
+- **상세**: `happy-core-kotlin.mdc` §테스트.
+
+## 1.5 views 폴더 네이밍 (필수)
+
+Atomic Design 계층별로 숫자 접두사를 사용한다. **3_organisms, 4_templates, 5_pages**는 v11 Flutter와 동일한 도메인별 하위 폴더 구조를 따른다.
+
+- **계층별 책임·atoms 규칙·import 방향**: `atomic-design-kotlin.mdc` (이 문서는 트리·패키지·§1.5 표를 단일 소스로 유지).
+- **`3_organisms` 도메인·하위 폴더(원클릭 목적지) 상세**: `atomic-design-kotlin.mdc` §5.
+- **`4_templates` 기능 경계 상세**: `atomic-design-kotlin.mdc` §5.5·§5.5a (`member_1_home` 기준). 템플릿은 `3_organisms`를 조립해 배치·순서·스크롤·시트·탭·Scaffold 슬롯을 정하고, 입력은 `*ScreenState + 콜백`으로 제한한다. §5.5a: 바텀시트·리스트 스크롤 등과 묶인 상태는 **Screen**이 소유한다.
+- **`5_pages` 역할 고정**: ViewModel `UiState`를 템플릿/유기체용 `*ScreenState`로 매핑하고 라우팅(onNavigateXxx)을 연결한다. 템플릿 내부에서 ViewModel/Repository/API 호출·직접 navigate 결정은 두지 않는다.
+
+| 계층 | 폴더명 | 역할 |
+|------|--------|------|
+| 1 | 1_atoms | 최소 단위 (버튼, 텍스트, 아이콘 등) |
+| 2 | 2_molecules | atoms 조합 |
+| 3 | 3_organisms | molecules 조합 |
+| 4 | 4_templates | 레이아웃 골격 |
+| 5 | 5_pages | 화면별 Screen |
+
+### 멤버 도메인 폴더 순서 (Phase D 표준)
+
+`3_organisms`·`4_templates`·`5_pages`·`ui/views/state` 에 동일한 세그먼트를 쓴다. **소스 디렉터리 실제 이동은 Phase D1**에서 한다 (D0는 룰·문서만).
+
+| # | 폴더 | 설명 |
+|---|------|------|
+| 1 | `member_1_home` | 홈 탭 |
+| 2 | `member_2_discovery` | 발견 탭 — `3_organisms`·`4_templates`·`5_pages`·`ui/views/state`의 **`member_2_discovery` 트리가 UI 단일 소스** (홈 `member_1_home`과 폴더 공유 없이 맞춤) |
+| 3 | `member_3_lounge` | 라운지 탭 |
+| 4 | `member_4_chats` | 채팅 탭 |
+| 5 | `member_5_mypage` | 마이페이지 탭 |
+
+**용어 `my_page` vs 폴더 `member_5_mypage`**: glossary·`config/MyPageTabItems`·도메인 용어는 기존처럼 **`my_page`** 를 쓴다. **`member_5_mypage`** 는 views/state의 **폴더명·Kotlin 패키지 세그먼트** (`ui.views.organisms.member_5_mypage` 등)일 뿐이며, 스네이크 케이스 한 조각으로 **`mypage`** 를 쓴다 (`member_*_my_page` 형태 아님).
+
+- **금지**: atoms, molecules, organisms, templates (숫자 접두사 없음)
+- **패키지**: 폴더는 1_atoms 등, Kotlin package는 atoms 등 (숫자로 시작 불가)
+- **begin 유기체(예시 A)**: `3_organisms/begin/{common,google,email,welcome}/…` 아래 경로의 세그먼트(`3_` 제외)를 `package com.example.happy_v12.ui.views.organisms` 뒤에 **동일 순서·이름**으로 붙여 폴더와 package를 1:1로 맞춘다 (예: `…/begin/common/begin_common_1_phone/signup/Foo.kt` → `…organisms.begin.common.begin_common_1_phone.signup`, `…/begin/welcome/begin_welcome_1_hub/WelcomeOrganism.kt` → `…organisms.begin.welcome.begin_welcome_1_hub`).
+- **begin 템플릿(예시 A)**: `4_templates/begin/{shared,welcome,google,email,common}/…` 는 `package com.example.happy_v12.ui.views.templates` 뒤에 **동일 세그먼트**로 맞춘다 (예: `…/begin/common/begin_common_1_phone/PhoneSignupTemplate.kt` → `…templates.begin.common.begin_common_1_phone`).
+- **begin pages(예시 A)**: `5_pages/begin/{common,welcome,google,email}/…/begin_*_N_*` 는 `package com.example.happy_v12.ui.views.pages` 뒤에 **동일 세그먼트**로 맞춘다 (예: `…/begin/common/begin_common_1_phone/PhoneSignupScreen.kt` → `…pages.begin.common.begin_common_1_phone`).
+- **begin pages 레거시(금지)**: `5_pages/begin_1_welcome/` 및 `5_pages/` 최상위의 `begin_common_*` 단독 폴더에 Screen을 두지 않는다. 인증·온보딩 화면은 위 **begin pages(예시 A)** 단일 루트만 사용한다.
+- **ui/views/state**: 템플릿·유기체는 `*ScreenState`·`state/common`의 UI 전용 sealed만 시그니처로 받고, ViewModel `UiState`→그 타입 매핑은 **5_pages Screen에서만** 둔다; 나머지 화면·도메인은 동일 패턴으로 **이슈·PR 단위**로 옮긴다.
+
+## 2. 역할 분리
+
+- **UI**: 화면 표시만. 비즈니스 로직 없음.
+- **Controller (ViewModel)**: `controllers/`에 위치. 상태 관리, Repository 호출, UI 이벤트 처리.
+- **Repository**: API 호출, 로컬 저장, 데이터 변환.
+- **Remote**: Retrofit API 정의만. HTTP 호출만 담당.
+- **ViewModel + Context**: Intent·startActivity 등 일회성 작업 시 Context를 파라미터로 받을 수 있음. Context 보관 금지. 단, l10n용 `@ApplicationContext`는 do-not-repeat §6에 따라 ViewModel에서 허용.
+- **handlers**: 푸시 클릭, 딥링크 수신, 크래시 리포팅 등 이벤트 처리 (PushNotificationHandler, PendingDeepLinkHolder, PushTokenSender, CrashReportHandler).
+- **helpers**: 특정 기능 래퍼 (BiometricHelper, ErrorDisplayHelper, AdminErrorHelper, GoogleSignInHelper, PermissionHelper, ImageFromGalleryHelper, MultiImageFromGalleryHelper, PickImageCropHelper, ExternalUrlOpenHelper).
+- **utils**: 순수 유틸 함수 (DateUtils, AmountFormatUtils, Validators, ForbiddenWords, MessageStatusUtils, GeocodingUtils, QrCodeUtils 등).
+
+## 3. Model 위치
+
+- **M(Model)**: PHP `htdocs/models/` 에만 존재.
+- Kotlin에는 DTO(data class)만 있음. DB 로직 없음.
+
+## 4. 한 줄 요약
+
+> data/remote → repository → ViewModel → UI. handlers/helpers/utils/config/domain 역할 분리. Model은 PHP만.

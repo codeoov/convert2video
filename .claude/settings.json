@@ -1,0 +1,53 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "PowerShell(*)",
+      "Read",
+      "Glob",
+      "Grep"
+    ],
+    "deny": [
+      "Bash(rm *)",
+      "Bash(rm)",
+      "PowerShell(Remove-Item *)",
+      "PowerShell(Remove-Item)",
+      "PowerShell(rm *)",
+      "PowerShell(del *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".cursor/hooks/harness-inject-rules.ps1\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/run-stop-checks.ps1\"",
+            "timeout": 90
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/run-stop-compile.ps1\"",
+            "timeout": 900
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/session-report.ps1\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

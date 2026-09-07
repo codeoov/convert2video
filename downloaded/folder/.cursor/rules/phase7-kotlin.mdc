@@ -1,0 +1,108 @@
+---
+description: "happy_v12 Phase 7 — UX polish: home banner auto-slide (BannerSlider, scaleH, indicators), Noto/custom typography (Type.kt, AppFontSizes), AnimatedIconAtom (expand/collapse icon swap), screen scale (ScreenScale, scaleW/scaleH, fontScale clamp, debug banner), table calendar for session dates (TableCalendarOrganism), DateUtils year-month formatting, notification permission flow (PushTokenSender). Use when editing those files, gathering-create calendar, home banner UX, or Phase 7 checklist / glossary alignment."
+alwaysApply: false
+globs:
+  - "**/BannerSlider.kt"
+  - "**/ui/theme/Type.kt"
+  - "**/AppFontSizes.kt"
+  - "**/AnimatedIconAtom.kt"
+  - "**/ScreenScale.kt"
+  - "**/TableCalendarOrganism.kt"
+  - "**/DateUtils.kt"
+  - "**/PushTokenSender.kt"
+  - "**/HostManageTab.kt"
+---
+
+
+# Phase 7: UX 고도화 — happy_v12
+
+**목표**: 배너 자동 슬라이드, 커스텀 폰트, 아이콘 애니메이션, 화면 스케일, 달력 UI  
+**상태**: ✅ 완료
+
+---
+
+## 1. 배너 자동 슬라이드 (7-1)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| BannerSlider | HorizontalPager + 3초 자동 슬라이드 | ✅ |
+| 배너 높이 | scaleH(AppSizes.bannerHeight) 적용 | ✅ (Phase 7-4 연동) |
+| 인디케이터·여백 | AppSizes.bannerIndicator*, AppSpacing.listItemGap | ✅ (do-not-repeat §3.1) |
+
+**참고**: `ui/views/3_organisms/member_1_home/BannerSlider.kt`, `terminology-glossary.mdc` 배너
+
+---
+
+## 2. 커스텀 폰트 (7-2)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| Noto Sans KR | Variable Font, typography 적용 | ✅ |
+| AppFontSizes | xs~xxxl, letterSpacingReferralCode | ✅ |
+
+**참고**: `ui/theme/Type.kt`, `ui/theme/AppFontSizes.kt`, `terminology-glossary.mdc` 앱 폰트 크기
+
+---
+
+## 3. 아이콘 전환 애니메이션 (7-3)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| AnimatedIconAtom | isExpanded에 따라 startIcon ↔ endIcon 전환 | ✅ |
+| 적용 예 | HostManageTab 정렬 필터, 확장/축소 UI | ✅ |
+
+**참고**: `ui/views/1_atoms/AnimatedIconAtom.kt`, `terminology-glossary.mdc` 아이콘 전환 애니메이션
+
+---
+
+## 4. 화면 스케일 (7-4)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| ScreenScaleProvider | LocalDensity(ScaledDensity), LocalScreenScale | ✅ |
+| scaleW / scaleH | DesignSize 375×812 기준 비율 | ✅ |
+| fontScale | min 0.85, max 1.15 제한 | ✅ |
+| ScreenScaleDebugBanner | DEBUG 빌드에서 스케일 정보 표시 | ✅ |
+
+**참고**: `ui/theme/ScreenScale.kt`, `do-not-repeat-kotlin.mdc` §3.2, `docs/dev-records/kotlin/20260308-phase7-4-screen-scale-rules-audit-and-record.md`
+
+---
+
+## 5. 달력 UI (7-5)
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| TableCalendarOrganism | 월 그리드, 회차 날짜 선택 | ✅ |
+| DateUtils.formatYearMonth | "yyyy년 M월" / "MMMM yyyy" | ✅ |
+| 모임 만들기 5단계 | AlertDialog + TableCalendarOrganism | ✅ |
+
+**참고**: `ui/views/3_organisms/common/TableCalendarOrganism.kt`, `utils/format/DateUtils.kt`, `terminology-glossary.mdc` 테이블 달력·달력 월 포맷
+
+---
+
+## 6. 기타 Phase 7 관련
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 7-A~D | AdminErrorHelper, AppAlpha, AppFontSizes, Theme 색상, BannerSlider/TableCalendar/AnimatedIcon 룰 준수 | ✅ |
+| 7-E | 알림 권한 요청 (PushTokenSender, OneSignal) | ✅ (do-not-repeat §6.8) |
+
+**참고**: `docs/dev-records/kotlin/20260308-phase7-a-b-c-d-rules-audit-and-record.md`, `docs/dev-records/kotlin/20260308-phase7-e-notification-permission-rules-record.md`
+
+---
+
+## 7. Phase 7 완료 체크리스트
+
+- [x] 배너 3초 자동 슬라이드 + scaleH
+- [x] Noto Sans KR 커스텀 폰트
+- [x] AnimatedIconAtom (확장/축소 아이콘 전환)
+- [x] ScreenScaleProvider, scaleW/scaleH, 디버그 배너
+- [x] TableCalendarOrganism + formatYearMonth
+- [x] do-not-repeat §3·§3.1·§3.2·§6 준수 (색상·여백·스케일·l10n)
+- [x] terminology-glossary 등록 (배너, 폰트, 아이콘 애니메이션, 화면 스케일, 테이블 달력 등)
+
+---
+
+## 8. 한 줄 요약
+
+> Phase 7: 배너 자동 슬라이드, 커스텀 폰트, 아이콘 애니메이션, 화면 스케일, 달력 UI — UX 고도화 완료.
