@@ -74,3 +74,245 @@ jobs:
             Write-Host "One or more policy-check steps were not success."
             exit 1
           }
+
+  build-and-test:
+    needs: policy-checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: write
+    env:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        id: setup_java
+        # https://github.com/actions/setup-java/commit/3a4f6e1f5048716f1f70fc9a554e01cc23480f7c
+        uses: actions/setup-java@3a4f6e1f5048716f1f70fc9a554e01cc23480f7c # v4.7.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        id: setup_android
+        # https://github.com/android-actions/setup-android/commit/9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: tools platform-tools
+
+      - name: Ensure Android platform 36 and build-tools
+        id: ensure_android_packages
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_SDK_ROOT:-}" ] && [ -n "${ANDROID_HOME:-}" ]; then
+            ANDROID_SDK_ROOT="$ANDROID_HOME"
+          fi
+          : "${ANDROID_SDK_ROOT:?ANDROID_SDK_ROOT/ANDROID_HOME not set}"
+          : "${ANDROID_HOME:=$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          if [ ! -d "$ANDROID_SDK_ROOT" ] || [ ! -w "$ANDROID_SDK_ROOT" ]; then
+            echo "ANDROID_SDK_ROOT is missing or not writable: $ANDROID_SDK_ROOT" >&2
+            exit 1
+          fi
+
+          SDKMANAGER=""
+          if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          else
+            for candidate in "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin/sdkmanager; do
+              if [ -x "$candidate" ]; then
+                SDKMANAGER="$candidate"
+                break
+              fi
+            done
+          fi
+          if [ -z "$SDKMANAGER" ] && [ -x "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" ]; then
+            SDKMANAGER="$ANDROID_SDK_ROOT/tools/bin/sdkmanager"
+          fi
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found under ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >&2
+            exit 1
+          fi
+
+          if [ ! -d "$ANDROID_SDK_ROOT/platforms/android-36" ]; then
+            echo "Installing platforms;android-36"
+            "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-36"
+          else
+            echo "platforms;android-36 already present"
+          fi
+          if [ ! -d "$ANDROID_SDK_ROOT/build-tools/35.0.0" ]; then
+            echo "Installing build-tools;35.0.0"
+            "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" "build-tools;35.0.0"
+          else
+            echo "build-tools;35.0.0 already present"
+          fi
+
+      - name: Set up Gradle
+        id: setup_gradle
+        # https://github.com/gradle/actions/commit/06832c7b30a0129d7fb559d6eeacc9f0fab6d21f
+        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559d6eeacc9f0fab6d21f # v4.3.1
+
+      - name: Make gradlew executable
+        id: chmod_gradlew
+        run: chmod +x gradlew
+
+      - name: Verify BACKEND_BASE_URL helper contract (self-test)
+        id: verify_backend_base_url
+        run: ./gradlew :app:verifyBackendBaseUrlContract --stacktrace
+
+      - name: Compile debug Kotlin
+        id: compile_debug_kotlin
+        run: ./gradlew :app:compileDebugKotlin --stacktrace
+
+      - name: Unit tests (google + huawei debug)
+        id: unit_tests
+        run: ./gradlew :app:testGoogleDebugUnitTest :app:testHuaweiDebugUnitTest --stacktrace
+
+      - name: List unit test outputs
+        id: list_unit_test_outputs
+        if: failure() || cancelled()
+        run: |
+          echo "=== app/build/reports/tests ==="
+          if [ -d app/build/reports/tests ]; then
+            ls -laR app/build/reports/tests
+          else
+            echo "(missing)"
+          fi
+          echo "=== app/build/test-results ==="
+          if [ -d app/build/test-results ]; then
+            ls -laR app/build/test-results
+          else
+            echo "(missing)"
+          fi
+          echo "file count:"
+          find app/build/reports/tests app/build/test-results -type f 2>/dev/null | wc -l
+
+      - name: Upload unit test reports
+        id: upload_unit_test_reports
+        if: failure() || cancelled()
+        # https://github.com/actions/upload-artifact/commit/ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: unit-test-reports
+          path: |
+            app/build/reports/tests/
+            app/build/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  release-compile-check:
+    # keep in sync with build-and-test (do not edit that job)
+    needs: [policy-checks, build-and-test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: write
+    env:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        id: setup_java
+        # https://github.com/actions/setup-java/commit/3a4f6e1f5048716f1f70fc9a554e01cc23480f7c
+        uses: actions/setup-java@3a4f6e1f5048716f1f70fc9a554e01cc23480f7c # v4.7.1
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: false
+
+      - name: Set up Android SDK
+        id: setup_android
+        # https://github.com/android-actions/setup-android/commit/9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: tools platform-tools
+
+      # must match build-and-test ensure_android_packages: platforms;android-36 + build-tools;35.0.0
+      - name: Ensure Android platform 36 and build-tools
+        id: ensure_android_packages
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_SDK_ROOT:-}" ] && [ -n "${ANDROID_HOME:-}" ]; then
+            ANDROID_SDK_ROOT="$ANDROID_HOME"
+          fi
+          : "${ANDROID_SDK_ROOT:?ANDROID_SDK_ROOT/ANDROID_HOME not set}"
+          : "${ANDROID_HOME:=$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          if [ ! -d "$ANDROID_SDK_ROOT" ] || [ ! -w "$ANDROID_SDK_ROOT" ]; then
+            echo "ANDROID_SDK_ROOT is missing or not writable: $ANDROID_SDK_ROOT" >&2
+            exit 1
+          fi
+
+          SDKMANAGER=""
+          if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          else
+            for candidate in "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin/sdkmanager; do
+              if [ -x "$candidate" ]; then
+                SDKMANAGER="$candidate"
+                break
+              fi
+            done
+          fi
+          if [ -z "$SDKMANAGER" ] && [ -x "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" ]; then
+            SDKMANAGER="$ANDROID_SDK_ROOT/tools/bin/sdkmanager"
+          fi
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found under ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >&2
+            exit 1
+          fi
+
+          if [ ! -d "$ANDROID_SDK_ROOT/platforms/android-36" ]; then
+            echo "Installing platforms;android-36"
+            "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" "platforms;android-36"
+          else
+            echo "platforms;android-36 already present"
+          fi
+          if [ ! -d "$ANDROID_SDK_ROOT/build-tools/35.0.0" ]; then
+            echo "Installing build-tools;35.0.0"
+            "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" "build-tools;35.0.0"
+          else
+            echo "build-tools;35.0.0 already present"
+          fi
+
+      - name: Set up Gradle
+        id: setup_gradle
+        # https://github.com/gradle/actions/commit/06832c7b30a0129d7fb559d6eeacc9f0fab6d21f
+        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559d6eeacc9f0fab6d21f # v4.3.1
+        with:
+          cache-read-only: true
+
+      - name: Make gradlew executable
+        id: chmod_gradlew
+        run: chmod +x gradlew
+
+      # Release URL is validated when compile tasks generate BuildConfig; do not add a second gradlew / verifyBackendBaseUrlContract here.
+      - name: Compile google/huawei release Kotlin
+        id: compile_release_kotlin
+        run: ./gradlew :app:compileGoogleReleaseKotlin :app:compileHuaweiReleaseKotlin -PbackendBaseUrl=https://ci-placeholder.example.com --stacktrace
+
+      - name: Upload release compile reports
+        id: upload_release_compile_reports
+        if: failure() || cancelled()
+        # https://github.com/actions/upload-artifact/commit/ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-compile-reports
+          path: |
+            app/build/reports/
+          retention-days: 7
+          if-no-files-found: warn
