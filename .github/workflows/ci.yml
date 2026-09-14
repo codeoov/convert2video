@@ -315,3 +315,66 @@ jobs:
             app/build/reports/
           retention-days: 7
           if-no-files-found: warn
+
+  backend-php-tests:
+    # needs policy-checks only so this job runs in parallel with build-and-test.
+    # No setup-php/composer: GitHub-hosted runner PHP CLI + openssl extension only.
+    # YAML step order is not execution order; always()+checkout.outcome gates keep both suites runnable after a sibling fail.
+    # Phase 4 branch protection should require this job as a status check; do not add PHP to release-compile-check needs.
+    needs: policy-checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Verify PHP CLI and openssl
+        id: verify_php_cli
+        if: always() && steps.checkout.outcome == 'success'
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          command -v php
+          php -v
+          if ! php -r 'exit((PHP_VERSION_ID >= 80200 && PHP_VERSION_ID < 80500) ? 0 : 1);'; then
+            echo "PHP version must be 8.2 inclusive .. below 8.5 (PHP_VERSION_ID 80200..80499)." >&2
+            php -r 'echo PHP_VERSION, PHP_EOL;'
+            exit 1
+          fi
+          php -r 'exit(extension_loaded("openssl") ? 0 : 1);'
+          test -f "${GITHUB_WORKSPACE}/backend/GoogleCertsVerifierTest.php"
+          test -f "${GITHUB_WORKSPACE}/backend/EntitlementControllerTest.php"
+
+      # verify fail → skip suites; sibling suites always-run after verify ok.
+      - name: GoogleCertsVerifierTest
+        id: google_certs_verifier_test
+        if: always() && steps.checkout.outcome == 'success' && steps.verify_php_cli.outcome == 'success'
+        timeout-minutes: 2
+        # E_ALL surfaces warnings; allow_url_fopen=0 is no-network contract.
+        run: php -d allow_url_fopen=0 -d display_errors=1 -d error_reporting=E_ALL "${GITHUB_WORKSPACE}/backend/GoogleCertsVerifierTest.php"
+
+      - name: EntitlementControllerTest
+        id: entitlement_controller_test
+        if: always() && steps.checkout.outcome == 'success' && steps.verify_php_cli.outcome == 'success'
+        timeout-minutes: 2
+        # E_ALL surfaces warnings; allow_url_fopen=0 is no-network contract.
+        run: php -d allow_url_fopen=0 -d display_errors=1 -d error_reporting=E_ALL "${GITHUB_WORKSPACE}/backend/EntitlementControllerTest.php"
+
+      - name: Aggregate backend-php-test results
+        if: ${{ !cancelled() && always() && steps.checkout.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          verify='${{ steps.verify_php_cli.outcome }}'
+          certs='${{ steps.google_certs_verifier_test.outcome }}'
+          entitlement='${{ steps.entitlement_controller_test.outcome }}'
+          echo "verify_php_cli: $verify"
+          echo "google_certs_verifier_test: $certs"
+          echo "entitlement_controller_test: $entitlement"
+          if [ "$verify" != success ] || [ "$certs" != success ] || [ "$entitlement" != success ]; then
+            echo "One or more backend-php-test steps were not success."
+            exit 1
+          fi
+
