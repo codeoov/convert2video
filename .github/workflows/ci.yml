@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Same-ref push and workflow_dispatch share this group, so a newer run can cancel the other.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  policy-checks:
+    # GitHub-hosted ubuntu-24.04 includes pwsh; policy scripts are PowerShell.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CLAUDE_PROJECT_DIR: ${{ github.workspace }}
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: check-forbidden-imports
+        id: check_forbidden_imports
+        if: always() && steps.checkout.outcome == 'success'
+        shell: pwsh -NoProfile -File "{0}"
+        run: |
+          & "$env:CLAUDE_PROJECT_DIR/scripts/check-forbidden-imports.ps1"
+
+      - name: check-terminology-forbidden
+        id: check_terminology_forbidden
+        if: always() && steps.checkout.outcome == 'success'
+        shell: pwsh -NoProfile -File "{0}"
+        run: |
+          & "$env:CLAUDE_PROJECT_DIR/scripts/check-terminology-forbidden.ps1"
+
+      - name: check-logging-forbidden
+        id: check_logging_forbidden
+        if: always() && steps.checkout.outcome == 'success'
+        shell: pwsh -NoProfile -File "{0}"
+        run: |
+          & "$env:CLAUDE_PROJECT_DIR/scripts/check-logging-forbidden.ps1"
+
+      - name: check-callbackflow-close-handlers
+        id: check_callbackflow_close_handlers
+        if: always() && steps.checkout.outcome == 'success'
+        shell: pwsh -NoProfile -File "{0}"
+        run: |
+          & "$env:CLAUDE_PROJECT_DIR/scripts/check-callbackflow-close-handlers.ps1" -RepoRoot $env:CLAUDE_PROJECT_DIR -SourceRoot "$env:CLAUDE_PROJECT_DIR/app/src"
+
+      - name: Aggregate policy-check results
+        if: always() && steps.checkout.outcome == 'success'
+        shell: pwsh -NoProfile -File "{0}"
+        run: |
+          $forbidden = '${{ steps.check_forbidden_imports.outcome }}'
+          $terminology = '${{ steps.check_terminology_forbidden.outcome }}'
+          $logging = '${{ steps.check_logging_forbidden.outcome }}'
+          $callbackflow = '${{ steps.check_callbackflow_close_handlers.outcome }}'
+          Write-Host "check-forbidden-imports: $forbidden"
+          Write-Host "check-terminology-forbidden: $terminology"
+          Write-Host "check-logging-forbidden: $logging"
+          Write-Host "check-callbackflow-close-handlers: $callbackflow"
+          $outcomes = @($forbidden, $terminology, $logging, $callbackflow)
+          if ($outcomes | Where-Object { $_ -ne 'success' }) {
+            Write-Host "One or more policy-check steps were not success."
+            exit 1
+          }
