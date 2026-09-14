@@ -231,7 +231,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          cache: false
 
       - name: Set up Android SDK
         id: setup_android
