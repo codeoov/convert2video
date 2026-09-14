@@ -93,8 +93,8 @@ jobs:
 
       - name: Set up JDK 17
         id: setup_java
-        # https://github.com/actions/setup-java/commit/3a4f6e1f5048716f1f70fc9a554e01cc23480f7c
-        uses: actions/setup-java@3a4f6e1f5048716f1f70fc9a554e01cc23480f7c # v4.7.1
+        # https://github.com/actions/setup-java/commit/c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: "17"
@@ -156,8 +156,8 @@ jobs:
 
       - name: Set up Gradle
         id: setup_gradle
-        # https://github.com/gradle/actions/commit/06832c7b30a0129d7fb559d6eeacc9f0fab6d21f
-        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559d6eeacc9f0fab6d21f # v4.3.1
+        # https://github.com/gradle/actions/commit/06832c7b30a0129d7fb559bcc6e43d26f6374244
+        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4.3.1
 
       - name: Make gradlew executable
         id: chmod_gradlew
@@ -226,8 +226,8 @@ jobs:
 
       - name: Set up JDK 17
         id: setup_java
-        # https://github.com/actions/setup-java/commit/3a4f6e1f5048716f1f70fc9a554e01cc23480f7c
-        uses: actions/setup-java@3a4f6e1f5048716f1f70fc9a554e01cc23480f7c # v4.7.1
+        # https://github.com/actions/setup-java/commit/c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: "17"
@@ -291,8 +291,8 @@ jobs:
 
       - name: Set up Gradle
         id: setup_gradle
-        # https://github.com/gradle/actions/commit/06832c7b30a0129d7fb559d6eeacc9f0fab6d21f
-        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559d6eeacc9f0fab6d21f # v4.3.1
+        # https://github.com/gradle/actions/commit/06832c7b30a0129d7fb559bcc6e43d26f6374244
+        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4.3.1
         with:
           cache-read-only: true
 
